@@ -3,6 +3,7 @@ window.PixelCanvas = (() => {
   let currentTool = "pencil";
   let currentColor = "#e94f37";
   let drawing = false;
+  let lastPaintedPixel = null;
 
   const canvas = document.getElementById("pixelCanvas");
   const paintedPixels = document.getElementById("paintedPixels");
@@ -13,7 +14,7 @@ window.PixelCanvas = (() => {
   }
 
   function paint(pixel) {
-    if (!pixel || !pixel.classList.contains("pixel")) return;
+    if (!pixel || !pixel.classList.contains("pixel") || pixel === lastPaintedPixel) return;
 
     if (currentTool === "eraser") {
       pixel.style.background = "#ffffff";
@@ -23,7 +24,13 @@ window.PixelCanvas = (() => {
       pixel.dataset.painted = "true";
     }
 
+    lastPaintedPixel = pixel;
     updateCounter();
+  }
+
+  function stopDrawing() {
+    drawing = false;
+    lastPaintedPixel = null;
   }
 
   function buildGrid() {
@@ -33,26 +40,44 @@ window.PixelCanvas = (() => {
       const pixel = document.createElement("div");
       pixel.className = "pixel";
       pixel.dataset.painted = "false";
-
-      pixel.addEventListener("pointerdown", event => {
-        drawing = true;
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-        paint(pixel);
-      });
-
-      pixel.addEventListener("pointerenter", () => {
-        if (drawing) paint(pixel);
-      });
-
       canvas.appendChild(pixel);
     }
 
     updateCounter();
   }
 
-  window.addEventListener("pointerup", () => {
-    drawing = false;
+  canvas.addEventListener("pointerdown", event => {
+    const pixel = event.target.closest(".pixel");
+    if (!pixel) return;
+
+    drawing = true;
+    lastPaintedPixel = null;
+    paint(pixel);
+    event.preventDefault();
   });
+
+  canvas.addEventListener("pointermove", event => {
+    if (!drawing) return;
+
+    const element = document.elementFromPoint(event.clientX, event.clientY);
+    const pixel = element?.closest?.(".pixel");
+
+    if (pixel && canvas.contains(pixel)) {
+      paint(pixel);
+    }
+
+    event.preventDefault();
+  });
+
+  canvas.addEventListener("pointerleave", () => {
+    if (drawing) lastPaintedPixel = null;
+  });
+
+  window.addEventListener("pointerup", stopDrawing);
+  window.addEventListener("pointercancel", stopDrawing);
+  window.addEventListener("blur", stopDrawing);
+
+  canvas.addEventListener("contextmenu", event => event.preventDefault());
 
   function setTool(tool) {
     currentTool = tool;
