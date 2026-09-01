@@ -2,7 +2,7 @@
 
 Pixel Art Studios es una aplicación web para **aprender, practicar y crear pixel art mediante instrucciones paso a paso**.
 
-La idea principal no es solamente copiar una imagen, sino aprender a construir objetos, personajes y escenarios entendiendo formas, color, luz, sombra y estilo.
+La idea principal no es solamente copiar una imagen, sino aprender a construir objetos, personajes y escenarios entendiendo formas, color, luz, sombra, resolución y estilo.
 
 ## 🎯 Objetivo
 
@@ -11,31 +11,58 @@ Crear un estudio de pixel art que permita:
 - Dibujar sobre una cuadrícula interactiva.
 - Seguir tutoriales escritos y gráficos paso a paso.
 - Ver exactamente qué píxeles se agregan en cada paso.
-- Practicar un mismo objeto en distintos tamaños y estilos.
+- Practicar un mismo objeto en diferentes resoluciones.
+- Comprender cuánto detalle conviene usar según el tamaño del sprite.
 - Aprender fundamentos de pixel art.
 - Crear una biblioteca ampliable de tutoriales.
 - Usar lo aprendido posteriormente en videojuegos y otros proyectos.
 
-## 🧩 Versión actual — v0.2.1
+## 🧩 Versión actual — v0.3
 
-La versión actual incluye:
+### Formatos
 
-- Lienzo pixelado de 16×16.
-- Herramienta lápiz.
-- Borrador.
+- 8×8 · Mini.
+- 16×16 · Clásico.
+- 32×32 · Detallado.
+- Cambio de formato desde el panel de herramientas o desde el tutorial.
+- La cuadrícula y la guía se reconstruyen automáticamente al cambiar de tamaño.
+
+### Herramientas de dibujo
+
+- ✏️ Lápiz con dibujo continuo al arrastrar.
+- 🧽 Borrador con borrado continuo al arrastrar.
+- 🪣 Cubeta de relleno.
+- 💧 Cuentagotas.
+- ╱ Herramienta de línea.
+- ▭ Herramienta de rectángulo.
 - Selector de color.
-- Limpiar lienzo.
-- Cuadrícula visible.
-- Pintura continua manteniendo presionado y arrastrando.
-- Borrado continuo manteniendo presionado y arrastrando.
-- Panel de tutorial.
-- Navegación entre instrucciones.
-- Guía gráfica de 16×16 para cada paso.
-- Resaltado visual de los píxeles nuevos del paso actual.
-- Color recomendado por paso.
-- Primer tutorial de práctica: una manzana sencilla.
+- Paleta rápida.
+- Visualización del código hexadecimal del color activo.
 
-## 📁 Estructura inicial
+### Utilidades
+
+- ↶ Deshacer.
+- ↷ Rehacer.
+- Historial de hasta 60 estados.
+- Mostrar u ocultar cuadrícula.
+- Zoom aproximado de 60% a 175%.
+- Contador de píxeles utilizados.
+- Coordenadas X/Y del cursor.
+- Limpiar lienzo.
+- Exportar el sprite como PNG en su resolución real.
+- Atajos de teclado para herramientas y Ctrl+Z / Ctrl+Y.
+
+### Tutorial gráfico
+
+La manzana es actualmente el objeto de práctica principal y tiene tres versiones diseñadas específicamente para cada formato:
+
+- **8×8:** silueta muy simple, pocos colores y detalles mínimos.
+- **16×16:** contorno, relleno, luz, sombra, tallo y hoja.
+- **32×32:** curvas más suaves, tonos intermedios, iluminación más compleja, sombras más amplias y detalles secundarios.
+
+El objetivo es demostrar que aumentar la resolución **no significa simplemente agrandar el mismo sprite**: cada tamaño requiere decisiones diferentes.
+
+## 📁 Estructura
 
 ```text
 Pixel-Art-Studios/
@@ -52,16 +79,27 @@ Pixel-Art-Studios/
         └── apple.json
 ```
 
+## ⌨️ Atajos actuales
+
+- `P` — lápiz.
+- `E` — borrador.
+- `F` — relleno.
+- `I` — cuentagotas.
+- `L` — línea.
+- `R` — rectángulo.
+- `Ctrl + Z` — deshacer.
+- `Ctrl + Y` o `Ctrl + Shift + Z` — rehacer.
+
 ## 🗺️ Ideas futuras
 
-- Tamaños 8×8, 16×16, 32×32 y personalizados.
+- Tamaños personalizados.
 - Capas.
-- Cuentagotas.
-- Relleno.
-- Deshacer y rehacer.
-- Exportar PNG.
-- Zoom.
-- Paletas guardadas.
+- Círculos y elipses pixeladas.
+- Selección y movimiento de áreas.
+- Copiar, pegar, voltear y rotar selecciones.
+- Paletas guardadas y paletas por estilo.
+- Fondo transparente.
+- Exportación ampliada sin suavizado.
 - Tutoriales de muebles, comida, plantas y tecnología.
 - Personajes y animaciones.
 - Escenarios y tilesets.
@@ -116,11 +154,31 @@ Pixel-Art-Studios/
 - [x] Permitir borrar varios píxeles manteniendo presionado y arrastrando.
 - [x] Corregir la captura del puntero que impedía recorrer correctamente las celdas.
 - [x] Evitar repintados innecesarios sobre el mismo píxel durante un arrastre.
-- [x] Añadir una indicación visual de cómo usar el arrastre.
-- [x] Preparar la hoja de ruta para buscador e IA paso a paso.
+
+### v0.3 — Herramientas y formatos
+
+- [x] Añadir lienzos 8×8, 16×16 y 32×32.
+- [x] Crear una versión diferente de la manzana para cada resolución.
+- [x] Explicar las diferencias de detalle entre formatos.
+- [x] Hacer dinámica la cuadrícula gráfica del tutorial.
+- [x] Añadir cubeta de relleno.
+- [x] Añadir cuentagotas.
+- [x] Añadir líneas rectas pixeladas.
+- [x] Añadir rectángulos pixelados.
+- [x] Añadir deshacer y rehacer.
+- [x] Añadir historial de estados.
+- [x] Añadir paleta rápida.
+- [x] Añadir código hexadecimal del color activo.
+- [x] Añadir mostrar/ocultar cuadrícula.
+- [x] Añadir zoom.
+- [x] Añadir indicador de coordenadas.
+- [x] Añadir exportación PNG.
+- [x] Añadir atajos de teclado.
+- [x] Mejorar el área de trabajo para lienzos grandes.
 - [ ] Añadir segundo objeto de práctica.
-- [ ] Añadir selector de tutoriales.
-- [ ] Añadir más tamaños y herramientas del lienzo.
+- [ ] Añadir selector/buscador de objetos.
+- [ ] Añadir herramienta de círculo/elipse.
+- [ ] Añadir selección de áreas.
 
 ## 🛠️ Tecnologías
 
@@ -128,4 +186,4 @@ Pixel-Art-Studios/
 - CSS3
 - JavaScript
 
-Por ahora no se utilizarán frameworks para mantener el proyecto sencillo y comprender bien cada parte.
+Por ahora no se utilizan frameworks para mantener el proyecto sencillo, rápido y fácil de comprender.
