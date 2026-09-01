@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Art Studios</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">PIXEL ART STUDIOS</p>
+      <h1>Aprende dibujando, píxel por píxel.</h1>
+    </div>
+    <span class="version">v0.1</span>
+  </header>
+
+  <main class="studio-layout">
+    <section class="panel tools-panel">
+      <h2>Herramientas</h2>
+
+      <div class="tool-group">
+        <label for="colorPicker">Color activo</label>
+        <input id="colorPicker" type="color" value="#e94f37">
+      </div>
+
+      <div class="tool-buttons">
+        <button id="pencilBtn" class="active" type="button">✏️ Lápiz</button>
+        <button id="eraserBtn" type="button">🧽 Borrador</button>
+        <button id="clearBtn" type="button">🗑️ Limpiar</button>
+      </div>
+
+      <div class="status-card">
+        <span>Herramienta</span>
+        <strong id="toolStatus">Lápiz</strong>
+      </div>
+    </section>
+
+    <section class="canvas-panel">
+      <div class="canvas-heading">
+        <div>
+          <p class="eyebrow">LIENZO</p>
+          <h2>16 × 16</h2>
+        </div>
+        <span id="paintedPixels">0 píxeles usados</span>
+      </div>
+
+      <div id="pixelCanvas" class="pixel-canvas" aria-label="Lienzo de pixel art de 16 por 16"></div>
+    </section>
+
+    <aside class="panel tutorial-panel">
+      <p class="eyebrow">PRÁCTICA 01</p>
+      <h2 id="tutorialTitle">Manzana clásica</h2>
+      <p id="tutorialMeta" class="tutorial-meta">16×16 · Principiante</p>
+
+      <div class="progress-wrap">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <p id="stepCounter" class="step-counter">Paso 1 de 7</p>
+      <p id="instruction" class="instruction"></p>
+
+      <div class="tutorial-actions">
+        <button id="prevStep" type="button">← Anterior</button>
+        <button id="nextStep" type="button">Siguiente →</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Construye la forma primero. Los detalles vienen después. 🎨
+  </footer>
+
+  <script src="js/tutorials.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
