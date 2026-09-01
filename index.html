@@ -12,7 +12,7 @@
       <p class="eyebrow">PIXEL ART STUDIOS</p>
       <h1>Aprende dibujando, píxel por píxel.</h1>
     </div>
-    <span class="version">v0.1</span>
+    <span class="version">v0.2</span>
   </header>
 
   <main class="studio-layout">
@@ -39,7 +39,7 @@
     <section class="canvas-panel">
       <div class="canvas-heading">
         <div>
-          <p class="eyebrow">LIENZO</p>
+          <p class="eyebrow">TU LIENZO</p>
           <h2>16 × 16</h2>
         </div>
         <span id="paintedPixels">0 píxeles usados</span>
@@ -57,8 +57,25 @@
         <div id="progressBar" class="progress-bar"></div>
       </div>
 
-      <p id="stepCounter" class="step-counter">Paso 1 de 7</p>
+      <p id="stepCounter" class="step-counter">Paso 1 de 6</p>
+
+      <div class="guide-card">
+        <div class="guide-heading">
+          <strong>Guía gráfica</strong>
+          <span>🟨 añade ahora</span>
+        </div>
+        <div id="guideCanvas" class="guide-canvas" aria-label="Guía visual del paso actual"></div>
+      </div>
+
       <p id="instruction" class="instruction"></p>
+
+      <div class="color-hint">
+        <span id="stepColorSwatch" class="color-swatch"></span>
+        <div>
+          <small>Color recomendado</small>
+          <strong id="stepColorName">Rojo oscuro</strong>
+        </div>
+      </div>
 
       <div class="tutorial-actions">
         <button id="prevStep" type="button">← Anterior</button>
@@ -68,7 +85,7 @@
   </main>
 
   <footer>
-    Construye la forma primero. Los detalles vienen después. 🎨
+    Mira el cambio, entiéndelo y luego dibújalo tú. 🎨
   </footer>
 
   <script src="js/tutorials.js"></script>
