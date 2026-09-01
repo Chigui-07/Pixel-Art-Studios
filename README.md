@@ -9,15 +9,16 @@ La idea principal no es solamente copiar una imagen, sino aprender a construir o
 Crear un estudio de pixel art que permita:
 
 - Dibujar sobre una cuadrícula interactiva.
-- Seguir tutoriales escritos paso a paso.
+- Seguir tutoriales escritos y gráficos paso a paso.
+- Ver exactamente qué píxeles se agregan en cada paso.
 - Practicar un mismo objeto en distintos tamaños y estilos.
 - Aprender fundamentos de pixel art.
 - Crear una biblioteca ampliable de tutoriales.
 - Usar lo aprendido posteriormente en videojuegos y otros proyectos.
 
-## 🧩 Primera versión — v0.1
+## 🧩 Versión actual — v0.2
 
-La primera versión incluye:
+La versión actual incluye:
 
 - Lienzo pixelado de 16×16.
 - Herramienta lápiz.
@@ -27,6 +28,9 @@ La primera versión incluye:
 - Cuadrícula visible.
 - Panel de tutorial.
 - Navegación entre instrucciones.
+- Guía gráfica de 16×16 para cada paso.
+- Resaltado visual de los píxeles nuevos del paso actual.
+- Color recomendado por paso.
 - Primer tutorial de práctica: una manzana sencilla.
 
 ## 📁 Estructura inicial
@@ -62,6 +66,9 @@ Pixel-Art-Studios/
 - Estilos 8-bit, 16-bit, Game Boy, RPG, isométrico y moderno.
 - Desafíos de práctica.
 - Modo libre sin referencia visual.
+- Ocultar o mostrar la guía gráfica.
+- Superponer la guía sobre el lienzo del usuario.
+- Validar automáticamente si el paso fue dibujado correctamente.
 
 ---
 
@@ -86,9 +93,20 @@ Pixel-Art-Studios/
 - [x] Crear cuadrícula interactiva 16×16.
 - [x] Añadir lápiz, borrador y selector de color.
 - [x] Añadir tutorial paso a paso.
-- [ ] Probar la interfaz en GitHub Pages.
-- [ ] Mejorar el diseño visual.
+- [x] Probar la interfaz en GitHub Pages.
+
+### v0.2 — Tutoriales gráficos
+
+- [x] Añadir una cuadrícula visual para las instrucciones.
+- [x] Convertir los pasos del tutorial en datos con coordenadas de píxeles.
+- [x] Mostrar acumulativamente lo construido en pasos anteriores.
+- [x] Resaltar los píxeles que deben añadirse en el paso actual.
+- [x] Mostrar el color recomendado para cada paso.
+- [x] Hacer que el selector de color cambie automáticamente con el tutorial.
+- [x] Mantener explicación escrita junto a la explicación gráfica.
 - [ ] Añadir segundo objeto de práctica.
+- [ ] Añadir selector de tutoriales.
+- [ ] Mejorar las herramientas del lienzo.
 
 ## 🛠️ Tecnologías
 
