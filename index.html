@@ -12,22 +12,61 @@
       <p class="eyebrow">PIXEL ART STUDIOS</p>
       <h1>Aprende dibujando, píxel por píxel.</h1>
     </div>
-    <span class="version">v0.2.1</span>
+    <span class="version">v0.3</span>
   </header>
 
   <main class="studio-layout">
     <section class="panel tools-panel">
-      <h2>Herramientas</h2>
+      <div class="panel-title-row">
+        <h2>Herramientas</h2>
+        <span class="mini-badge">v0.3</span>
+      </div>
+
+      <div class="tool-group">
+        <label for="sizeSelect">Formato del lienzo</label>
+        <select id="sizeSelect">
+          <option value="8">8 × 8 · Mini</option>
+          <option value="16" selected>16 × 16 · Clásico</option>
+          <option value="32">32 × 32 · Detallado</option>
+        </select>
+      </div>
 
       <div class="tool-group">
         <label for="colorPicker">Color activo</label>
-        <input id="colorPicker" type="color" value="#e94f37">
+        <div class="color-picker-row">
+          <input id="colorPicker" type="color" value="#e94f37">
+          <code id="colorHex">#E94F37</code>
+        </div>
+        <div id="quickPalette" class="quick-palette" aria-label="Paleta rápida"></div>
       </div>
 
-      <div class="tool-buttons">
+      <div class="tool-buttons tool-grid">
         <button id="pencilBtn" class="active" type="button">✏️ Lápiz</button>
         <button id="eraserBtn" type="button">🧽 Borrador</button>
+        <button id="fillBtn" type="button">🪣 Relleno</button>
+        <button id="eyedropperBtn" type="button">💧 Cuentagotas</button>
+        <button id="lineBtn" type="button">╱ Línea</button>
+        <button id="rectBtn" type="button">▭ Rectángulo</button>
+      </div>
+
+      <div class="history-actions">
+        <button id="undoBtn" type="button" title="Deshacer">↶ Deshacer</button>
+        <button id="redoBtn" type="button" title="Rehacer">↷ Rehacer</button>
+      </div>
+
+      <div class="utility-actions">
+        <button id="gridBtn" class="active" type="button"># Cuadrícula</button>
         <button id="clearBtn" type="button">🗑️ Limpiar</button>
+        <button id="exportBtn" type="button">💾 PNG</button>
+      </div>
+
+      <div class="zoom-control">
+        <span>Zoom</span>
+        <div>
+          <button id="zoomOutBtn" type="button">−</button>
+          <strong id="zoomLabel">100%</strong>
+          <button id="zoomInBtn" type="button">+</button>
+        </div>
       </div>
 
       <div class="status-card">
@@ -35,31 +74,49 @@
         <strong id="toolStatus">Lápiz</strong>
       </div>
 
-      <p class="tool-tip">💡 Mantén presionado y arrastra para pintar o borrar varios píxeles de forma continua.</p>
+      <p class="tool-tip">💡 Lápiz y borrador permiten mantener presionado y arrastrar. Línea y rectángulo se trazan desde el punto inicial hasta donde sueltes.</p>
     </section>
 
     <section class="canvas-panel">
       <div class="canvas-heading">
         <div>
           <p class="eyebrow">TU LIENZO</p>
-          <h2>16 × 16</h2>
+          <h2 id="canvasSizeLabel">16 × 16</h2>
         </div>
-        <span id="paintedPixels">0 píxeles usados</span>
+        <div class="canvas-stats">
+          <span id="coordinateLabel">x: — · y: —</span>
+          <span id="paintedPixels">0 píxeles usados</span>
+        </div>
       </div>
 
-      <div id="pixelCanvas" class="pixel-canvas" aria-label="Lienzo de pixel art de 16 por 16"></div>
+      <div id="canvasViewport" class="canvas-viewport">
+        <div id="pixelCanvas" class="pixel-canvas" aria-label="Lienzo interactivo de pixel art"></div>
+      </div>
+
+      <div class="canvas-help">
+        <span>Arrastra para dibujar</span>
+        <span>Usa la guía para comparar</span>
+        <span>Exporta cuando quieras</span>
+      </div>
     </section>
 
     <aside class="panel tutorial-panel">
-      <p class="eyebrow">PRÁCTICA 01</p>
+      <p class="eyebrow">PRÁCTICA · MANZANA</p>
       <h2 id="tutorialTitle">Manzana clásica</h2>
       <p id="tutorialMeta" class="tutorial-meta">16×16 · Principiante</p>
+      <p id="formatNote" class="format-note"></p>
+
+      <div class="format-tabs" aria-label="Formatos de práctica">
+        <button class="format-tab" data-size="8" type="button">8×8</button>
+        <button class="format-tab active" data-size="16" type="button">16×16</button>
+        <button class="format-tab" data-size="32" type="button">32×32</button>
+      </div>
 
       <div class="progress-wrap">
         <div id="progressBar" class="progress-bar"></div>
       </div>
 
-      <p id="stepCounter" class="step-counter">Paso 1 de 6</p>
+      <p id="stepCounter" class="step-counter">Paso 1</p>
 
       <div class="guide-card">
         <div class="guide-heading">
@@ -87,7 +144,7 @@
   </main>
 
   <footer>
-    Mira el cambio, entiéndelo y luego dibújalo tú. 🎨
+    Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨
   </footer>
 
   <script src="js/tutorials.js"></script>
