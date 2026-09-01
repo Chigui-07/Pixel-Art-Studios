@@ -16,7 +16,7 @@ Crear un estudio de pixel art que permita:
 - Crear una biblioteca ampliable de tutoriales.
 - Usar lo aprendido posteriormente en videojuegos y otros proyectos.
 
-## 🧩 Versión actual — v0.2
+## 🧩 Versión actual — v0.2.1
 
 La versión actual incluye:
 
@@ -26,6 +26,8 @@ La versión actual incluye:
 - Selector de color.
 - Limpiar lienzo.
 - Cuadrícula visible.
+- Pintura continua manteniendo presionado y arrastrando.
+- Borrado continuo manteniendo presionado y arrastrando.
 - Panel de tutorial.
 - Navegación entre instrucciones.
 - Guía gráfica de 16×16 para cada paso.
@@ -69,6 +71,9 @@ Pixel-Art-Studios/
 - Ocultar o mostrar la guía gráfica.
 - Superponer la guía sobre el lienzo del usuario.
 - Validar automáticamente si el paso fue dibujado correctamente.
+- Buscador de objetos para solicitar qué se quiere dibujar.
+- Generación de tutoriales paso a paso mediante IA.
+- Generación automática de paletas, tamaños y estilos según la búsqueda.
 
 ---
 
@@ -104,9 +109,18 @@ Pixel-Art-Studios/
 - [x] Mostrar el color recomendado para cada paso.
 - [x] Hacer que el selector de color cambie automáticamente con el tutorial.
 - [x] Mantener explicación escrita junto a la explicación gráfica.
+
+### v0.2.1 — Pintura continua
+
+- [x] Permitir pintar varios píxeles manteniendo presionado y arrastrando.
+- [x] Permitir borrar varios píxeles manteniendo presionado y arrastrando.
+- [x] Corregir la captura del puntero que impedía recorrer correctamente las celdas.
+- [x] Evitar repintados innecesarios sobre el mismo píxel durante un arrastre.
+- [x] Añadir una indicación visual de cómo usar el arrastre.
+- [x] Preparar la hoja de ruta para buscador e IA paso a paso.
 - [ ] Añadir segundo objeto de práctica.
 - [ ] Añadir selector de tutoriales.
-- [ ] Mejorar las herramientas del lienzo.
+- [ ] Añadir más tamaños y herramientas del lienzo.
 
 ## 🛠️ Tecnologías
 
