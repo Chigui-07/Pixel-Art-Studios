@@ -1,0 +1,20 @@
+{
+  "id": "apple-classic-16",
+  "name": "Manzana clásica",
+  "category": "objects",
+  "difficulty": "principiante",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "style": "clasico",
+  "steps": [
+    "Planifica una silueta redondeada de aproximadamente 10×9 píxeles en el centro.",
+    "Dibuja el contorno con un rojo oscuro.",
+    "Rellena la forma con un rojo medio.",
+    "Añade luz en la zona superior izquierda.",
+    "Añade sombra en la zona inferior derecha.",
+    "Dibuja un tallo marrón oscuro.",
+    "Agrega una hoja opcional y revisa la silueta final."
+  ]
+}
