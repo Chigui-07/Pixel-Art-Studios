@@ -16,6 +16,15 @@ const toolNames = {
   rect: "Rectángulo"
 };
 
+const toolMessages = {
+  pencil: "Lápiz activo: mantén presionado y arrastra.",
+  eraser: "Borrador activo: mantén presionado y arrastra.",
+  fill: "Relleno activo: haz clic dentro de una zona cerrada.",
+  eyedropper: "Cuentagotas activo: haz clic en cualquier píxel para tomar su color.",
+  line: "Línea activa: presiona el inicio y suelta en el final.",
+  rect: "Rectángulo activo: presiona una esquina y suelta en la opuesta."
+};
+
 const clearBtn = document.getElementById("clearBtn");
 const undoBtn = document.getElementById("undoBtn");
 const redoBtn = document.getElementById("redoBtn");
@@ -30,6 +39,7 @@ const colorPicker = document.getElementById("colorPicker");
 const colorHex = document.getElementById("colorHex");
 const quickPalette = document.getElementById("quickPalette");
 const toolStatus = document.getElementById("toolStatus");
+const actionStatus = document.getElementById("actionStatus");
 const tutorialTitle = document.getElementById("tutorialTitle");
 const tutorialMeta = document.getElementById("tutorialMeta");
 const formatNote = document.getElementById("formatNote");
@@ -52,16 +62,25 @@ const paletteColors = [
 let currentSize = 16;
 let currentStep = 0;
 let gridVisible = true;
+let statusTimer = null;
+
+function showStatus(message) {
+  actionStatus.textContent = message;
+  actionStatus.classList.add("visible");
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => actionStatus.classList.remove("visible"), 2200);
+}
 
 function currentTutorial() {
   return window.PixelTutorials.apple[currentSize];
 }
 
-function setColor(color) {
+function setColor(color, announce = false) {
   const normalized = color.toLowerCase();
   colorPicker.value = normalized;
   colorHex.textContent = normalized.toUpperCase();
   window.PixelCanvas.setColor(normalized);
+  if (announce) showStatus(`Color activo: ${normalized.toUpperCase()}`);
 }
 
 function buildPalette() {
@@ -73,7 +92,7 @@ function buildPalette() {
     swatch.style.background = color;
     swatch.title = color.toUpperCase();
     swatch.setAttribute("aria-label", `Usar color ${color}`);
-    swatch.addEventListener("click", () => setColor(color));
+    swatch.addEventListener("click", () => setColor(color, true));
     quickPalette.appendChild(swatch);
   });
 }
@@ -84,6 +103,7 @@ function setActiveTool(tool) {
   });
   toolStatus.textContent = toolNames[tool];
   window.PixelCanvas.setTool(tool);
+  showStatus(toolMessages[tool]);
 }
 
 function buildGuideCanvas() {
@@ -159,6 +179,7 @@ function setFormat(nextSize) {
   buildGuideCanvas();
   renderTutorial();
   updateHistoryButtons();
+  showStatus(`Formato cambiado a ${currentSize}×${currentSize}. El lienzo se reinició.`);
 }
 
 function updateHistoryButtons() {
@@ -175,10 +196,24 @@ Object.entries(toolButtons).forEach(([tool, button]) => {
 });
 
 colorPicker.addEventListener("input", event => setColor(event.target.value));
-clearBtn.addEventListener("click", () => window.PixelCanvas.clear());
-undoBtn.addEventListener("click", () => window.PixelCanvas.undo());
-redoBtn.addEventListener("click", () => window.PixelCanvas.redo());
-exportBtn.addEventListener("click", () => window.PixelCanvas.exportPNG());
+
+clearBtn.addEventListener("click", () => {
+  if (window.PixelCanvas.clear()) showStatus("Lienzo limpiado.");
+  else showStatus("El lienzo ya está vacío.");
+});
+
+undoBtn.addEventListener("click", () => {
+  if (window.PixelCanvas.undo()) showStatus("Acción deshecha.");
+});
+
+redoBtn.addEventListener("click", () => {
+  if (window.PixelCanvas.redo()) showStatus("Acción rehecha.");
+});
+
+exportBtn.addEventListener("click", () => {
+  window.PixelCanvas.exportPNG();
+  showStatus(`PNG ${currentSize}×${currentSize} exportado.`);
+});
 
 sizeSelect.addEventListener("change", event => setFormat(event.target.value));
 formatTabs.forEach(tab => tab.addEventListener("click", () => setFormat(tab.dataset.size)));
@@ -187,16 +222,19 @@ gridBtn.addEventListener("click", () => {
   gridVisible = window.PixelCanvas.toggleGrid();
   gridBtn.classList.toggle("active", gridVisible);
   gridBtn.textContent = gridVisible ? "# Cuadrícula" : "# Sin cuadrícula";
+  showStatus(gridVisible ? "Cuadrícula visible." : "Cuadrícula oculta.");
 });
 
 zoomInBtn.addEventListener("click", () => {
   window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() + 0.15);
   updateZoomLabel();
+  showStatus(`Zoom: ${zoomLabel.textContent}`);
 });
 
 zoomOutBtn.addEventListener("click", () => {
   window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() - 0.15);
   updateZoomLabel();
+  showStatus(`Zoom: ${zoomLabel.textContent}`);
 });
 
 prevStep.addEventListener("click", () => {
@@ -211,11 +249,16 @@ nextStep.addEventListener("click", () => {
   if (currentStep < tutorial.steps.length - 1) {
     currentStep++;
     renderTutorial();
+  } else {
+    showStatus("Tutorial completado. 🍎");
   }
 });
 
 window.addEventListener("pixelhistorychange", updateHistoryButtons);
-window.addEventListener("pixelcolorpicked", event => setColor(event.detail.color));
+window.addEventListener("pixelcolorpicked", event => {
+  setColor(event.detail.color);
+  showStatus(`Color tomado: ${event.detail.color.toUpperCase()}`);
+});
 
 document.addEventListener("keydown", event => {
   const tag = document.activeElement?.tagName;
