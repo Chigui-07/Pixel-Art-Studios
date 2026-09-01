@@ -8,6 +8,7 @@ window.PixelCanvas = (() => {
   let drawing = false;
   let lastPaintedPixel = null;
   let shapeStart = null;
+  let shapeEnd = null;
   let history = [];
   let historyIndex = -1;
   let zoom = 1;
@@ -30,10 +31,12 @@ window.PixelCanvas = (() => {
   }
 
   function getPixelColor(pixel) {
+    if (!pixel) return EMPTY;
     return normalizeColor(pixel.style.background || EMPTY);
   }
 
   function setPixelColor(pixel, color) {
+    if (!pixel) return;
     const normalized = normalizeColor(color);
     pixel.style.background = normalized;
     pixel.dataset.painted = normalized === EMPTY ? "false" : "true";
@@ -67,17 +70,19 @@ window.PixelCanvas = (() => {
   }
 
   function undo() {
-    if (historyIndex <= 0) return;
+    if (historyIndex <= 0) return false;
     historyIndex--;
     restore(history[historyIndex]);
     window.dispatchEvent(new CustomEvent("pixelhistorychange"));
+    return true;
   }
 
   function redo() {
-    if (historyIndex >= history.length - 1) return;
+    if (historyIndex >= history.length - 1) return false;
     historyIndex++;
     restore(history[historyIndex]);
     window.dispatchEvent(new CustomEvent("pixelhistorychange"));
+    return true;
   }
 
   function canUndo() {
@@ -95,7 +100,7 @@ window.PixelCanvas = (() => {
 
   function pixelAt(x, y) {
     if (x < 0 || y < 0 || x >= size || y >= size) return null;
-    return canvas.children[y * size + x];
+    return canvas.children[y * size + x] || null;
   }
 
   function pixelFromPointer(event) {
@@ -118,10 +123,11 @@ window.PixelCanvas = (() => {
 
     const start = coordsFromPixel(startPixel);
     const queue = [start];
+    let cursor = 0;
     const visited = new Set();
 
-    while (queue.length) {
-      const point = queue.shift();
+    while (cursor < queue.length) {
+      const point = queue[cursor++];
       const key = `${point.x},${point.y}`;
       if (visited.has(key)) continue;
       visited.add(key);
@@ -184,18 +190,20 @@ window.PixelCanvas = (() => {
     }
   }
 
-  function stopDrawing(event) {
+  function finishShape() {
+    if (!shapeStart || !shapeEnd) return false;
+    if (currentTool === "line") drawLine(shapeStart, shapeEnd);
+    if (currentTool === "rect") drawRectangle(shapeStart, shapeEnd);
+    updateCounter();
+    pushHistory();
+    return true;
+  }
+
+  function stopDrawing() {
     if (!drawing) return;
 
-    if ((currentTool === "line" || currentTool === "rect") && shapeStart) {
-      const endPixel = event ? pixelFromPointer(event) : null;
-      if (endPixel) {
-        const end = coordsFromPixel(endPixel);
-        if (currentTool === "line") drawLine(shapeStart, end);
-        if (currentTool === "rect") drawRectangle(shapeStart, end);
-        updateCounter();
-        pushHistory();
-      }
+    if (currentTool === "line" || currentTool === "rect") {
+      finishShape();
     } else if (currentTool === "pencil" || currentTool === "eraser") {
       pushHistory();
     }
@@ -203,6 +211,7 @@ window.PixelCanvas = (() => {
     drawing = false;
     lastPaintedPixel = null;
     shapeStart = null;
+    shapeEnd = null;
   }
 
   function buildGrid(newSize = size) {
@@ -230,17 +239,20 @@ window.PixelCanvas = (() => {
     const pixel = event.target.closest(".pixel");
     if (!pixel) return;
 
+    const coords = coordsFromPixel(pixel);
+    coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
+
     if (currentTool === "eyedropper") {
       const picked = getPixelColor(pixel);
-      if (picked !== EMPTY) {
-        setColor(picked);
-        window.dispatchEvent(new CustomEvent("pixelcolorpicked", { detail: { color: picked } }));
-      }
+      setColor(picked);
+      window.dispatchEvent(new CustomEvent("pixelcolorpicked", { detail: { color: picked } }));
+      event.preventDefault();
       return;
     }
 
     if (currentTool === "fill") {
       if (floodFill(pixel)) pushHistory();
+      event.preventDefault();
       return;
     }
 
@@ -248,19 +260,29 @@ window.PixelCanvas = (() => {
     lastPaintedPixel = null;
 
     if (currentTool === "line" || currentTool === "rect") {
-      shapeStart = coordsFromPixel(pixel);
+      shapeStart = coords;
+      shapeEnd = coords;
     } else {
       applyDirect(pixel);
     }
+
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch (_) {}
 
     event.preventDefault();
   });
 
   canvas.addEventListener("pointermove", event => {
     const pixel = pixelFromPointer(event);
+
     if (pixel) {
-      const { x, y } = coordsFromPixel(pixel);
-      coordinateLabel.textContent = `x: ${x} · y: ${y}`;
+      const coords = coordsFromPixel(pixel);
+      coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
+
+      if (drawing && (currentTool === "line" || currentTool === "rect")) {
+        shapeEnd = coords;
+      }
     }
 
     if (!drawing || (currentTool !== "pencil" && currentTool !== "eraser")) return;
@@ -270,16 +292,26 @@ window.PixelCanvas = (() => {
 
   canvas.addEventListener("pointerleave", () => {
     coordinateLabel.textContent = "x: — · y: —";
-    if (drawing) lastPaintedPixel = null;
+    if (drawing && (currentTool === "pencil" || currentTool === "eraser")) {
+      lastPaintedPixel = null;
+    }
+  });
+
+  canvas.addEventListener("pointerup", event => {
+    try {
+      canvas.releasePointerCapture(event.pointerId);
+    } catch (_) {}
+    stopDrawing();
   });
 
   window.addEventListener("pointerup", stopDrawing);
   window.addEventListener("pointercancel", stopDrawing);
-  window.addEventListener("blur", () => stopDrawing());
+  window.addEventListener("blur", stopDrawing);
   canvas.addEventListener("contextmenu", event => event.preventDefault());
 
   function setTool(tool) {
     currentTool = tool;
+    stopDrawing();
   }
 
   function setColor(color) {
@@ -292,10 +324,11 @@ window.PixelCanvas = (() => {
 
   function clear() {
     const hasPaint = getPixels().some(pixel => pixel.dataset.painted === "true");
-    if (!hasPaint) return;
+    if (!hasPaint) return false;
     getPixels().forEach(pixel => setPixelColor(pixel, EMPTY));
     updateCounter();
     pushHistory();
+    return true;
   }
 
   function resize(newSize) {
@@ -333,7 +366,10 @@ window.PixelCanvas = (() => {
     const link = document.createElement("a");
     link.download = `pixel-art-${size}x${size}.png`;
     link.href = output.toDataURL("image/png");
+    document.body.appendChild(link);
     link.click();
+    link.remove();
+    return true;
   }
 
   buildGrid();
