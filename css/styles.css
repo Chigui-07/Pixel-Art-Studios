@@ -41,6 +41,12 @@ button:hover {
   border-color: var(--accent);
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 button.active {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
@@ -81,11 +87,11 @@ button.active {
 }
 
 .studio-layout {
-  width: min(1400px, 100%);
+  width: min(1450px, 100%);
   margin: 0 auto;
   padding: 2rem;
   display: grid;
-  grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr) minmax(250px, 330px);
+  grid-template-columns: minmax(190px, 230px) minmax(320px, 1fr) minmax(310px, 390px);
   gap: 1.5rem;
   align-items: start;
 }
@@ -187,12 +193,84 @@ button.active {
   transition: width 0.2s ease;
 }
 
+.guide-card {
+  margin: 1rem 0;
+  padding: 0.9rem;
+  background: #18181f;
+  border: 1px solid var(--border);
+}
+
+.guide-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.guide-heading span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.guide-canvas {
+  width: min(100%, 300px);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  margin: 0 auto;
+  background: #fff;
+  border: 4px solid #0f0f14;
+  image-rendering: pixelated;
+}
+
+.guide-pixel {
+  border-right: 1px solid #d8d8d8;
+  border-bottom: 1px solid #d8d8d8;
+  position: relative;
+}
+
+.current-step-pixel {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 1;
+  animation: guidePulse 1s steps(2, end) infinite;
+}
+
+@keyframes guidePulse {
+  50% {
+    filter: brightness(1.35);
+  }
+}
+
 .instruction {
-  min-height: 150px;
-  line-height: 1.65;
+  min-height: 115px;
+  line-height: 1.6;
   padding: 1rem;
   background: #18181f;
   border-left: 3px solid var(--accent-2);
+}
+
+.color-hint {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: 1px dashed var(--border);
+}
+
+.color-hint small {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.color-swatch {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #f5f1e8;
+  flex: 0 0 auto;
 }
 
 .tutorial-actions {
@@ -207,7 +285,7 @@ footer {
   padding: 0 1rem 2rem;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1050px) {
   .studio-layout {
     grid-template-columns: 1fr;
   }
@@ -219,5 +297,9 @@ footer {
 
   .pixel-canvas {
     width: min(90vw, 600px);
+  }
+
+  .guide-canvas {
+    width: min(80vw, 340px);
   }
 }
