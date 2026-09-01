@@ -17,7 +17,7 @@ Crear un estudio de pixel art que permita:
 - Crear una biblioteca ampliable de tutoriales.
 - Usar lo aprendido posteriormente en videojuegos y otros proyectos.
 
-## 🧩 Versión actual — v0.3
+## 🧩 Versión actual — v0.3.1
 
 ### Formatos
 
@@ -31,10 +31,10 @@ Crear un estudio de pixel art que permita:
 
 - ✏️ Lápiz con dibujo continuo al arrastrar.
 - 🧽 Borrador con borrado continuo al arrastrar.
-- 🪣 Cubeta de relleno.
-- 💧 Cuentagotas.
-- ╱ Herramienta de línea.
-- ▭ Herramienta de rectángulo.
+- 🪣 Cubeta de relleno funcional.
+- 💧 Cuentagotas funcional, incluyendo el color blanco.
+- ╱ Herramienta de línea funcional entre punto inicial y final.
+- ▭ Herramienta de rectángulo funcional entre dos esquinas.
 - Selector de color.
 - Paleta rápida.
 - Visualización del código hexadecimal del color activo.
@@ -51,6 +51,7 @@ Crear un estudio de pixel art que permita:
 - Limpiar lienzo.
 - Exportar el sprite como PNG en su resolución real.
 - Atajos de teclado para herramientas y Ctrl+Z / Ctrl+Y.
+- Mensajes visibles que confirman la herramienta o acción seleccionada.
 
 ### Tutorial gráfico
 
@@ -161,24 +162,22 @@ Pixel-Art-Studios/
 - [x] Crear una versión diferente de la manzana para cada resolución.
 - [x] Explicar las diferencias de detalle entre formatos.
 - [x] Hacer dinámica la cuadrícula gráfica del tutorial.
-- [x] Añadir cubeta de relleno.
-- [x] Añadir cuentagotas.
-- [x] Añadir líneas rectas pixeladas.
-- [x] Añadir rectángulos pixelados.
-- [x] Añadir deshacer y rehacer.
-- [x] Añadir historial de estados.
-- [x] Añadir paleta rápida.
-- [x] Añadir código hexadecimal del color activo.
-- [x] Añadir mostrar/ocultar cuadrícula.
-- [x] Añadir zoom.
-- [x] Añadir indicador de coordenadas.
-- [x] Añadir exportación PNG.
-- [x] Añadir atajos de teclado.
-- [x] Mejorar el área de trabajo para lienzos grandes.
-- [ ] Añadir segundo objeto de práctica.
-- [ ] Añadir selector/buscador de objetos.
-- [ ] Añadir herramienta de círculo/elipse.
-- [ ] Añadir selección de áreas.
+- [x] Añadir interfaz para nuevas herramientas y utilidades.
+
+### v0.3.1 — Corrección funcional
+
+- [x] Conectar y reforzar la lógica real de todas las herramientas de v0.3.
+- [x] Corregir línea y rectángulo para conservar el punto final durante el arrastre.
+- [x] Hacer funcional el cuentagotas incluso sobre píxeles blancos.
+- [x] Confirmar cubeta de relleno con historial.
+- [x] Confirmar deshacer y rehacer.
+- [x] Confirmar cambio entre 8×8, 16×16 y 32×32.
+- [x] Confirmar mostrar/ocultar cuadrícula.
+- [x] Confirmar zoom.
+- [x] Confirmar exportación PNG.
+- [x] Añadir mensajes de estado para saber qué herramienta está activa.
+- [x] Añadir versionado a CSS y JavaScript (`?v=0.3.1`) para evitar que GitHub Pages cargue archivos antiguos desde caché.
+- [ ] Añadir funciones nuevas solamente después de probar esta versión.
 
 ## 🛠️ Tecnologías
 
