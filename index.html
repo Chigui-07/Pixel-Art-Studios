@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Art Studios</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=0.3.1">
 </head>
 <body>
   <header class="topbar">
@@ -12,14 +12,14 @@
       <p class="eyebrow">PIXEL ART STUDIOS</p>
       <h1>Aprende dibujando, píxel por píxel.</h1>
     </div>
-    <span class="version">v0.3</span>
+    <span class="version">v0.3.1</span>
   </header>
 
   <main class="studio-layout">
     <section class="panel tools-panel">
       <div class="panel-title-row">
         <h2>Herramientas</h2>
-        <span class="mini-badge">v0.3</span>
+        <span class="mini-badge">v0.3.1</span>
       </div>
 
       <div class="tool-group">
@@ -73,8 +73,9 @@
         <span>Herramienta</span>
         <strong id="toolStatus">Lápiz</strong>
       </div>
+      <p id="actionStatus" class="action-status" aria-live="polite">Listo para dibujar.</p>
 
-      <p class="tool-tip">💡 Lápiz y borrador permiten mantener presionado y arrastrar. Línea y rectángulo se trazan desde el punto inicial hasta donde sueltes.</p>
+      <p class="tool-tip">💡 Lápiz y borrador: mantén presionado y arrastra. Línea y rectángulo: presiona el inicio y suelta en el final.</p>
     </section>
 
     <section class="canvas-panel">
@@ -147,8 +148,8 @@
     Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨
   </footer>
 
-  <script src="js/tutorials.js"></script>
-  <script src="js/canvas.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/tutorials.js?v=0.3.1"></script>
+  <script src="js/canvas.js?v=0.3.1"></script>
+  <script src="js/app.js?v=0.3.1"></script>
 </body>
 </html>
