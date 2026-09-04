@@ -9,13 +9,8 @@ const toolButtons = {
 };
 
 const toolNames = {
-  pencil: "Lápiz",
-  eraser: "Borrador",
-  fill: "Relleno",
-  eyedropper: "Cuentagotas",
-  line: "Línea",
-  rect: "Rectángulo",
-  ellipse: "Elipse"
+  pencil: "Lápiz", eraser: "Borrador", fill: "Relleno", eyedropper: "Cuentagotas",
+  line: "Línea", rect: "Rectángulo", ellipse: "Elipse"
 };
 
 const toolMessages = {
@@ -43,6 +38,8 @@ const sizeSelect = document.getElementById("sizeSelect");
 const canvasSizeLabel = document.getElementById("canvasSizeLabel");
 const colorPicker = document.getElementById("colorPicker");
 const colorHex = document.getElementById("colorHex");
+const lighterBtn = document.getElementById("lighterBtn");
+const darkerBtn = document.getElementById("darkerBtn");
 const quickPalette = document.getElementById("quickPalette");
 const toolStatus = document.getElementById("toolStatus");
 const actionStatus = document.getElementById("actionStatus");
@@ -77,7 +74,9 @@ function showStatus(message) {
   statusTimer = setTimeout(() => actionStatus.classList.remove("visible"), 2200);
 }
 
-function currentTutorial() { return window.PixelTutorials.apple[currentSize]; }
+function currentTutorial() {
+  return window.PixelTutorials.apple[currentSize] || null;
+}
 
 function setColor(color, announce = false) {
   const normalized = color.toLowerCase();
@@ -85,6 +84,13 @@ function setColor(color, announce = false) {
   colorHex.textContent = normalized.toUpperCase();
   window.PixelCanvas.setColor(normalized);
   if (announce) showStatus(`Color activo: ${normalized.toUpperCase()}`);
+}
+
+function adjustColor(amount) {
+  const hex = window.PixelCanvas.getColor().replace("#", "");
+  const channels = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+  const adjusted = channels.map(v => Math.max(0, Math.min(255, v + amount)));
+  setColor(`#${adjusted.map(v => v.toString(16).padStart(2, "0")).join("")}`, true);
 }
 
 function buildPalette() {
@@ -109,7 +115,9 @@ function setActiveTool(tool) {
 }
 
 function buildGuideCanvas() {
+  const tutorial = currentTutorial();
   guideCanvas.innerHTML = "";
+  if (!tutorial) return;
   guideCanvas.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
   for (let i = 0; i < currentSize * currentSize; i++) {
     const pixel = document.createElement("div");
@@ -118,23 +126,20 @@ function buildGuideCanvas() {
   }
 }
 
-function getPixelIndex(x, y) { return y * currentSize + x; }
-
 function renderGuide() {
   const tutorial = currentTutorial();
+  if (!tutorial) return;
   const guidePixels = guideCanvas.children;
   Array.from(guidePixels).forEach(pixel => {
     pixel.style.background = "#ffffff";
     pixel.classList.remove("current-step-pixel");
   });
-
   tutorial.steps.forEach((step, stepIndex) => {
     if (stepIndex > currentStep) return;
     step.pixels.forEach(([x, y]) => {
-      const pixel = guidePixels[getPixelIndex(x, y)];
+      const pixel = guidePixels[y * currentSize + x];
       if (!pixel) return;
-      const customColor = step.pixelColors?.[`${x},${y}`];
-      pixel.style.background = customColor || step.color;
+      pixel.style.background = step.pixelColors?.[`${x},${y}`] || step.color;
       if (stepIndex === currentStep) pixel.classList.add("current-step-pixel");
     });
   });
@@ -142,6 +147,22 @@ function renderGuide() {
 
 function renderTutorial() {
   const tutorial = currentTutorial();
+  if (!tutorial) {
+    tutorialTitle.textContent = "Modo libre";
+    tutorialMeta.textContent = `${currentSize}×${currentSize} · Sin tutorial específico`;
+    formatNote.textContent = "Este tamaño está disponible para crear y animar. La práctica de la manzana sigue disponible en 8×8, 16×16 y 32×32.";
+    instruction.textContent = "Usa el lienzo libremente o cambia a uno de los tamaños de práctica para seguir el tutorial gráfico.";
+    stepCounter.textContent = "Modo libre";
+    progressBar.style.width = "0%";
+    stepColorName.textContent = "Color libre";
+    stepColorSwatch.style.background = window.PixelCanvas.getColor();
+    prevStep.disabled = true;
+    nextStep.disabled = true;
+    guideCanvas.innerHTML = "";
+    return;
+  }
+
+  nextStep.disabled = false;
   const step = tutorial.steps[currentStep];
   tutorialTitle.textContent = tutorial.title;
   tutorialMeta.textContent = tutorial.meta;
@@ -167,7 +188,7 @@ function setFormat(nextSize) {
   buildGuideCanvas();
   renderTutorial();
   updateHistoryButtons();
-  showStatus(`Formato cambiado a ${currentSize}×${currentSize}. El lienzo se reinició.`);
+  showStatus(`Formato cambiado a ${currentSize}×${currentSize}.`);
 }
 
 function updateHistoryButtons() {
@@ -179,7 +200,8 @@ function updateZoomLabel() { zoomLabel.textContent = `${Math.round(window.PixelC
 
 Object.entries(toolButtons).forEach(([tool, button]) => button.addEventListener("click", () => setActiveTool(tool)));
 colorPicker.addEventListener("input", event => setColor(event.target.value));
-
+lighterBtn?.addEventListener("click", () => adjustColor(18));
+darkerBtn?.addEventListener("click", () => adjustColor(-18));
 clearBtn.addEventListener("click", () => showStatus(window.PixelCanvas.clear() ? "Lienzo limpiado." : "El lienzo ya está vacío."));
 undoBtn.addEventListener("click", () => { if (window.PixelCanvas.undo()) showStatus("Acción deshecha."); });
 redoBtn.addEventListener("click", () => { if (window.PixelCanvas.redo()) showStatus("Acción rehecha."); });
@@ -187,7 +209,6 @@ exportBtn.addEventListener("click", () => { window.PixelCanvas.exportPNG(); show
 flipHBtn.addEventListener("click", () => { window.PixelCanvas.flipHorizontal(); showStatus("Lienzo volteado horizontalmente."); });
 flipVBtn.addEventListener("click", () => { window.PixelCanvas.flipVertical(); showStatus("Lienzo volteado verticalmente."); });
 rotateBtn.addEventListener("click", () => { window.PixelCanvas.rotate90(); showStatus("Lienzo rotado 90°."); });
-
 sizeSelect.addEventListener("change", event => setFormat(event.target.value));
 formatTabs.forEach(tab => tab.addEventListener("click", () => setFormat(tab.dataset.size)));
 
@@ -201,34 +222,32 @@ gridBtn.addEventListener("click", () => {
 zoomInBtn.addEventListener("click", () => {
   window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() + 0.15);
   updateZoomLabel();
-  showStatus(`Zoom: ${zoomLabel.textContent}`);
 });
 zoomOutBtn.addEventListener("click", () => {
   window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() - 0.15);
   updateZoomLabel();
-  showStatus(`Zoom: ${zoomLabel.textContent}`);
 });
 
-prevStep.addEventListener("click", () => { if (currentStep > 0) { currentStep--; renderTutorial(); } });
+prevStep.addEventListener("click", () => {
+  if (currentStep > 0) { currentStep--; renderTutorial(); }
+});
 nextStep.addEventListener("click", () => {
   const tutorial = currentTutorial();
+  if (!tutorial) return;
   if (currentStep < tutorial.steps.length - 1) { currentStep++; renderTutorial(); }
   else showStatus("Tutorial completado. 🍎");
 });
 
 window.addEventListener("pixelhistorychange", updateHistoryButtons);
-window.addEventListener("pixelcolorpicked", event => {
-  setColor(event.detail.color);
-  showStatus(`Color tomado: ${event.detail.color.toUpperCase()}`);
-});
+window.addEventListener("pixelcolorpicked", event => setColor(event.detail.color, true));
 
 document.addEventListener("keydown", event => {
   const tag = document.activeElement?.tagName;
-  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
   const key = event.key.toLowerCase();
   if ((event.ctrlKey || event.metaKey) && key === "z") {
     event.preventDefault();
-    if (event.shiftKey) window.PixelCanvas.redo(); else window.PixelCanvas.undo();
+    event.shiftKey ? window.PixelCanvas.redo() : window.PixelCanvas.undo();
     return;
   }
   if ((event.ctrlKey || event.metaKey) && key === "y") {
