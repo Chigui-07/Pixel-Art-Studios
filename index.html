@@ -4,30 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Art Studios</title>
-  <link rel="stylesheet" href="css/styles.css?v=0.3.3">
+  <link rel="stylesheet" href="css/styles.css?v=0.4">
 </head>
 <body>
   <header class="topbar">
     <div>
       <p class="eyebrow">PIXEL ART STUDIOS</p>
-      <h1>Aprende dibujando, píxel por píxel.</h1>
+      <h1>Aprende, crea y anima píxel por píxel.</h1>
     </div>
-    <span class="version">v0.3.3</span>
+    <span class="version">v0.4</span>
   </header>
 
   <main class="studio-layout">
     <section class="panel tools-panel">
       <div class="panel-title-row">
         <h2>Herramientas</h2>
-        <span class="mini-badge">v0.3.3</span>
+        <span class="mini-badge">v0.4</span>
       </div>
 
       <div class="tool-group">
         <label for="sizeSelect">Formato del lienzo</label>
         <select id="sizeSelect">
           <option value="8">8 × 8 · Mini</option>
+          <option value="12">12 × 12</option>
           <option value="16" selected>16 × 16 · Clásico</option>
+          <option value="24">24 × 24</option>
           <option value="32">32 × 32 · Detallado</option>
+          <option value="48">48 × 48</option>
+          <option value="64">64 × 64 · Grande</option>
         </select>
       </div>
 
@@ -36,6 +40,10 @@
         <div class="color-picker-row">
           <input id="colorPicker" type="color" value="#e94f37">
           <code id="colorHex">#E94F37</code>
+        </div>
+        <div class="color-adjust-row">
+          <button id="darkerBtn" type="button">🌑 Oscurecer</button>
+          <button id="lighterBtn" type="button">☀️ Aclarar</button>
         </div>
         <div id="quickPalette" class="quick-palette" aria-label="Paleta rápida"></div>
       </div>
@@ -51,8 +59,8 @@
       </div>
 
       <div class="history-actions">
-        <button id="undoBtn" type="button" title="Deshacer">↶ Deshacer</button>
-        <button id="redoBtn" type="button" title="Rehacer">↷ Rehacer</button>
+        <button id="undoBtn" type="button">↶ Deshacer</button>
+        <button id="redoBtn" type="button">↷ Rehacer</button>
       </div>
 
       <div class="utility-actions">
@@ -84,8 +92,6 @@
         <p>P lápiz · E borrador · F relleno · I cuentagotas · L línea · R rectángulo · O elipse</p>
         <p>Ctrl+Z deshacer · Ctrl+Y rehacer</p>
       </details>
-
-      <p class="tool-tip">💡 Lápiz y borrador: arrastra. Línea, rectángulo y elipse: presiona un punto y suelta en el extremo opuesto.</p>
     </section>
 
     <section class="canvas-panel">
@@ -106,8 +112,8 @@
 
       <div class="canvas-help">
         <span>Arrastra para dibujar</span>
-        <span>Usa la guía para comparar</span>
-        <span>Exporta cuando quieras</span>
+        <span>Usa frames para animar</span>
+        <span>Exporta sprite o spritesheet</span>
       </div>
     </section>
 
@@ -145,6 +151,39 @@
     </aside>
   </main>
 
+  <section class="workspace-wrap">
+    <div class="panel animation-lab">
+      <div class="panel-title-row">
+        <div>
+          <p class="eyebrow">ANIMATION LAB</p>
+          <h2>Frames y spritesheets</h2>
+        </div>
+        <span id="frameStatus" class="mini-badge">1 frame · activo 1</span>
+      </div>
+      <p class="ai-intro">Cada frame guarda una copia real del lienzo. Puedes crear poses consecutivas, reproducirlas y exportarlas como spritesheet horizontal.</p>
+
+      <div class="animation-controls">
+        <button id="addFrameBtn" type="button">＋ Frame vacío</button>
+        <button id="duplicateFrameBtn" type="button">⧉ Duplicar frame</button>
+        <button id="deleteFrameBtn" type="button">🗑 Eliminar frame</button>
+        <label>FPS
+          <select id="fpsSelect">
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="6" selected>6</option>
+            <option value="8">8</option>
+            <option value="12">12</option>
+          </select>
+        </label>
+        <button id="playAnimationBtn" type="button">▶ Reproducir</button>
+        <button id="stopAnimationBtn" type="button">■ Detener</button>
+        <button id="exportSheetBtn" type="button">💾 Exportar spritesheet</button>
+      </div>
+
+      <div id="frameTimeline" class="frame-timeline" aria-label="Línea de tiempo de frames"></div>
+    </div>
+  </section>
+
   <section class="ai-lab-wrap">
     <div class="panel ai-lab">
       <div class="panel-title-row">
@@ -155,17 +194,19 @@
         <span class="mini-badge">sin API todavía</span>
       </div>
 
-      <p class="ai-intro">Esta sección define el “pedido” de pixel art. Hoy genera una especificación local; después conectaremos esa misma estructura a una IA para producir paleta, pasos, coordenadas y guía gráfica automáticamente.</p>
+      <p class="ai-intro">Esta sección define el pedido de pixel art. Después usaremos la misma estructura para objetos, personajes, animaciones y escenas.</p>
 
       <div class="ai-grid">
         <label>¿Qué quieres dibujar?
-          <input id="aiObject" type="text" placeholder="Ej. espada medieval, gato, farol, árbol RPG">
+          <input id="aiObject" type="text" placeholder="Ej. espada medieval, Nicolás durmiendo, farol, árbol RPG">
         </label>
 
         <label>Categoría
           <select id="aiCategory">
             <option value="item">Objeto</option>
             <option value="character">Personaje</option>
+            <option value="animation">Animación</option>
+            <option value="scene">Escena</option>
             <option value="food">Comida</option>
             <option value="nature">Naturaleza</option>
             <option value="building">Edificio</option>
@@ -179,13 +220,18 @@
         <label>Tamaño
           <select id="aiSize">
             <option value="8">8×8</option>
+            <option value="12">12×12</option>
             <option value="16" selected>16×16</option>
+            <option value="24">24×24</option>
             <option value="32">32×32</option>
+            <option value="48">48×48</option>
+            <option value="64">64×64</option>
           </select>
         </label>
 
         <label>Estilo
           <select id="aiStyle">
+            <option value="rumbo">RUMBO</option>
             <option value="classic">Pixel art clásico</option>
             <option value="8-bit">8-bit</option>
             <option value="16-bit">16-bit</option>
@@ -265,11 +311,12 @@
             <option value="6" selected>6 pasos</option>
             <option value="8">8 pasos</option>
             <option value="10">10 pasos</option>
+            <option value="12">12 pasos</option>
           </select>
         </label>
 
         <label class="ai-wide">Notas extra
-          <textarea id="aiNotes" rows="3" placeholder="Ej. que parezca usado, con una gema azul, sin demasiados colores..."></textarea>
+          <textarea id="aiNotes" rows="3" placeholder="Ej. animación de 8 frames, transición noche-mañana, mantener diseño del personaje..."></textarea>
         </label>
       </div>
 
@@ -284,16 +331,17 @@
           <strong>Especificación para la futura IA</strong>
           <span id="aiState">Esperando una idea…</span>
         </div>
-        <pre id="aiOutput">Escribe un objeto y configura sus opciones.</pre>
+        <pre id="aiOutput">Escribe un objeto, personaje, animación o escena y configura sus opciones.</pre>
       </div>
     </div>
   </section>
 
-  <footer>Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨</footer>
+  <footer>Todo el flujo del estudio está pensado para pixel art. 🎨</footer>
 
-  <script src="js/tutorials.js?v=0.3.3"></script>
-  <script src="js/canvas.js?v=0.3.3"></script>
-  <script src="js/app.js?v=0.3.3"></script>
-  <script src="js/ai-prep.js?v=0.3.3"></script>
+  <script src="js/tutorials.js?v=0.4"></script>
+  <script src="js/canvas.js?v=0.4"></script>
+  <script src="js/app.js?v=0.4"></script>
+  <script src="js/animation.js?v=0.4"></script>
+  <script src="js/ai-prep.js?v=0.4"></script>
 </body>
 </html>
