@@ -27,10 +27,13 @@ Los tutoriales de la manzana siguen disponibles en 8×8, 16×16 y 32×32. Los de
 - ╱ Línea.
 - ▭ Rectángulo.
 - ◯ Elipse/círculo.
+- 🖐️ Mano para desplazar el lienzo sin pintar.
 - Selector de color.
 - Paleta rápida.
 - ☀️ Aclarar color activo.
 - 🌑 Oscurecer color activo.
+
+La herramienta Mano puede activarse con `H`. También puede usarse temporalmente manteniendo presionada la barra espaciadora: al soltarla se vuelve a la herramienta anterior.
 
 ### Utilidades
 
@@ -123,6 +126,8 @@ Una meta importante será guardar personajes base como Nicolás, Molly y Emily p
 - `L` — línea.
 - `R` — rectángulo.
 - `O` — elipse.
+- `H` — mano/desplazamiento.
+- `Espacio` mantenido — mano temporal.
 - `Ctrl + Z` — deshacer.
 - `Ctrl + Y` o `Ctrl + Shift + Z` — rehacer.
 
@@ -193,6 +198,8 @@ Pixel-Art-Studios/
 - [x] Añadir movimiento de frames hacia izquierda/derecha.
 - [x] Mostrar duración en cada miniatura del timeline.
 - [x] Mantener onion skin separado del dibujo real.
+- [x] Añadir herramienta Mano para mover el lienzo sin pintar.
+- [x] Añadir atajo `H` y mano temporal con barra espaciadora.
 - [ ] Copiar y pegar frames entre animaciones.
 - [ ] Guardar animaciones como proyectos/assets.
 - [ ] Exportar GIF/APNG.
