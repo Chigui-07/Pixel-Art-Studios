@@ -13,59 +13,85 @@ Crear un estudio de pixel art que permita:
 - Ver exactamente qué píxeles se agregan en cada paso.
 - Practicar un mismo objeto en diferentes resoluciones.
 - Comprender cuánto detalle conviene usar según el tamaño del sprite.
-- Aprender fundamentos de pixel art.
 - Crear una biblioteca ampliable de tutoriales.
-- Usar lo aprendido posteriormente en videojuegos y otros proyectos.
+- Preparar una futura generación asistida por IA.
 
-## 🧩 Versión actual — v0.3.2
+## 🧩 Versión actual — v0.3.3
 
 ### Formatos
 
 - 8×8 · Mini.
 - 16×16 · Clásico.
 - 32×32 · Detallado.
-- Cambio de formato desde el panel de herramientas o desde el tutorial.
-- La cuadrícula y la guía se reconstruyen automáticamente al cambiar de tamaño.
 
 ### Herramientas de dibujo
 
-- ✏️ Lápiz con dibujo continuo al arrastrar.
-- 🧽 Borrador con borrado continuo al arrastrar.
-- 🪣 Cubeta de relleno.
+- ✏️ Lápiz con dibujo continuo.
+- 🧽 Borrador.
+- 🪣 Relleno.
 - 💧 Cuentagotas.
-- ╱ Línea pixelada.
-- ▭ Rectángulo pixelado.
-- ◯ Elipse/círculo pixelado.
-- Selector de color.
-- Paleta rápida.
-- Visualización del código hexadecimal del color activo.
+- ╱ Línea.
+- ▭ Rectángulo.
+- ◯ Elipse/círculo.
+- Selector de color y paleta rápida.
 
 ### Utilidades
 
-- ↶ Deshacer.
-- ↷ Rehacer.
+- Deshacer y rehacer.
 - Historial de hasta 60 estados.
-- ↔ Voltear todo el lienzo horizontalmente.
-- ↕ Voltear todo el lienzo verticalmente.
-- ↻ Rotar todo el lienzo 90°.
-- Mostrar u ocultar cuadrícula.
-- Zoom aproximado de 60% a 175%.
-- Contador de píxeles utilizados.
-- Coordenadas X/Y del cursor.
-- Limpiar lienzo.
-- Exportar el sprite como PNG en su resolución real.
-- Atajos de teclado.
-- Mensajes visibles que confirman herramientas y acciones.
+- Voltear horizontal y vertical.
+- Rotar 90°.
+- Mostrar/ocultar cuadrícula.
+- Zoom.
+- Coordenadas y contador de píxeles.
+- Exportar PNG.
+- Panel visible de atajos.
 
-### Tutorial gráfico
+### 🤖 AI Lab — prototipo local
 
-La manzana sigue siendo el objeto de práctica principal y tiene tres versiones diseñadas específicamente para cada formato:
+La v0.3.3 introduce la primera estructura pensada específicamente para la futura IA.
 
-- **8×8:** silueta simple, pocos colores y detalles mínimos.
-- **16×16:** contorno, relleno, luz, sombra, tallo y hoja.
-- **32×32:** curvas más suaves, tonos intermedios, iluminación más compleja, sombras amplias y detalles secundarios.
+El usuario puede definir:
 
-El objetivo es demostrar que aumentar la resolución **no significa simplemente agrandar el mismo sprite**: cada tamaño requiere decisiones diferentes.
+- objeto a dibujar;
+- categoría;
+- tamaño 8×8, 16×16 o 32×32;
+- estilo visual;
+- nivel de detalle;
+- tipo de paleta;
+- iluminación;
+- perspectiva;
+- fondo;
+- tipo de contorno;
+- cantidad de pasos del tutorial;
+- notas adicionales.
+
+Por ahora **no se llama a ninguna API ni modelo de IA**. El sistema genera una especificación local estructurada (`pixel-art-studio-spec-v1`) que puede:
+
+- previsualizarse;
+- copiarse como JSON;
+- aplicar el tamaño seleccionado al editor.
+
+Esta especificación será la base para enviar solicitudes consistentes a una IA real en una versión futura.
+
+La salida esperada de la futura IA será:
+
+1. paleta recomendada;
+2. sprite final;
+3. pasos de construcción;
+4. coordenadas de píxeles por paso;
+5. colores por píxel cuando sea necesario;
+6. guía gráfica acumulativa compatible con el sistema actual de tutoriales.
+
+El AI Lab incluye pequeños presets locales para reconocer ideas como manzana, espada, árbol, cofre, casa y personaje y sugerir opciones iniciales.
+
+### Tutorial gráfico actual
+
+La manzana continúa siendo el objeto de práctica principal:
+
+- **8×8:** forma esencial.
+- **16×16:** contorno, relleno, luces y sombras.
+- **32×32:** mayor detalle, curvas y tonos intermedios.
 
 ## 📁 Estructura
 
@@ -78,7 +104,8 @@ Pixel-Art-Studios/
 ├── js/
 │   ├── app.js
 │   ├── canvas.js
-│   └── tutorials.js
+│   ├── tutorials.js
+│   └── ai-prep.js
 └── data/
     └── objects/
         └── apple.json
@@ -98,25 +125,18 @@ Pixel-Art-Studios/
 
 ## 🗺️ Ideas futuras
 
-- Tamaños personalizados.
-- Capas.
+- Conectar el AI Lab a una IA real.
+- Convertir la respuesta de IA directamente en tutoriales gráficos.
+- Validar automáticamente la estructura generada.
+- Biblioteca y buscador de objetos.
 - Selección y movimiento de áreas.
-- Copiar y pegar selecciones.
-- Transformar solamente una selección.
-- Paletas guardadas y paletas por estilo.
+- Copiar/pegar selecciones.
+- Capas.
 - Fondo transparente.
-- Exportación ampliada sin suavizado.
-- Tutoriales de muebles, comida, plantas y tecnología.
+- Paletas guardadas.
 - Personajes y animaciones.
 - Escenarios y tilesets.
-- Estilos 8-bit, 16-bit, Game Boy, RPG, isométrico y moderno.
-- Desafíos de práctica.
-- Modo libre sin referencia visual.
-- Superponer la guía sobre el lienzo del usuario.
-- Validar automáticamente si el paso fue dibujado correctamente.
-- Buscador de objetos para solicitar qué se quiere dibujar.
-- Generación de tutoriales paso a paso mediante IA.
-- Generación automática de paletas, tamaños y estilos según la búsqueda.
+- Estilos adicionales.
 
 ---
 
@@ -126,22 +146,12 @@ Pixel-Art-Studios/
 
 ### v0.1 — Base inicial
 
-- [x] Definir concepto del proyecto.
-- [x] Crear estructura inicial.
-- [x] Crear README y bitácora.
-- [x] Crear interfaz base.
-- [x] Crear cuadrícula interactiva 16×16.
-- [x] Añadir lápiz, borrador y selector de color.
-- [x] Añadir tutorial paso a paso.
-- [x] Probar la interfaz en GitHub Pages.
+- [x] Crear estructura, interfaz y cuadrícula 16×16.
+- [x] Añadir lápiz, borrador, color y primer tutorial.
 
 ### v0.2 — Tutoriales gráficos
 
-- [x] Añadir cuadrícula visual para instrucciones.
-- [x] Convertir pasos en coordenadas de píxeles.
-- [x] Mostrar acumulativamente pasos anteriores.
-- [x] Resaltar píxeles del paso actual.
-- [x] Mostrar color recomendado.
+- [x] Añadir guía visual por coordenadas y pasos acumulativos.
 
 ### v0.2.1 — Pintura continua
 
@@ -149,28 +159,31 @@ Pixel-Art-Studios/
 
 ### v0.3 — Herramientas y formatos
 
-- [x] Añadir lienzos 8×8, 16×16 y 32×32.
-- [x] Crear una manzana distinta para cada resolución.
-- [x] Añadir interfaz de herramientas y utilidades.
+- [x] Añadir 8×8, 16×16 y 32×32.
+- [x] Adaptar la manzana a cada resolución.
 
 ### v0.3.1 — Corrección funcional
 
-- [x] Hacer funcionales lápiz, borrador, relleno, cuentagotas, línea y rectángulo.
-- [x] Confirmar historial, zoom, cuadrícula, formatos y exportación PNG.
-- [x] Añadir mensajes de estado.
-- [x] Evitar caché antigua mediante versionado de scripts.
+- [x] Hacer funcionales herramientas, historial, zoom, cuadrícula y PNG.
 
 ### v0.3.2 — Formas y transformaciones
 
-- [x] Añadir elipse/círculo pixelado.
-- [x] Añadir volteo horizontal del lienzo.
-- [x] Añadir volteo vertical del lienzo.
-- [x] Añadir rotación de 90°.
-- [x] Integrar las nuevas acciones con deshacer/rehacer.
-- [x] Añadir atajo `O` para la elipse.
-- [ ] Añadir selección de áreas.
-- [ ] Añadir fondo transparente.
-- [ ] Añadir biblioteca/buscador de objetos.
+- [x] Añadir elipse, volteos y rotación.
+
+### v0.3.3 — Preparación para IA
+
+- [x] Añadir AI Lab.
+- [x] Añadir entrada libre de objeto.
+- [x] Añadir categoría, tamaño, estilo y detalle.
+- [x] Añadir paleta, iluminación, perspectiva y fondo.
+- [x] Añadir contorno, número de pasos y notas extra.
+- [x] Generar una especificación local estructurada.
+- [x] Copiar la especificación como JSON.
+- [x] Aplicar el tamaño elegido al editor.
+- [x] Añadir presets locales básicos.
+- [x] Añadir panel visible de atajos.
+- [ ] Conectar una IA real.
+- [ ] Convertir la respuesta de IA en un tutorial cargable.
 
 ## 🛠️ Tecnologías
 
