@@ -1,30 +1,24 @@
 # 🎨 Pixel Art Studios
 
-Pixel Art Studios es una aplicación web para **aprender, practicar y crear pixel art mediante instrucciones paso a paso**.
+Pixel Art Studios es una aplicación web para **aprender, practicar, crear y animar pixel art**.
 
-La idea principal no es solamente copiar una imagen, sino aprender a construir objetos, personajes y escenarios entendiendo formas, color, luz, sombra, resolución y estilo.
+La meta es que el estudio sirva tanto para aprender como para producir assets reales: objetos, personajes, animaciones, escenas, tilesets y efectos, siempre en pixel art.
 
-## 🎯 Objetivo
+## 🧩 Versión actual — v0.4
 
-Crear un estudio de pixel art que permita:
+### Formatos del editor
 
-- Dibujar sobre una cuadrícula interactiva.
-- Seguir tutoriales escritos y gráficos paso a paso.
-- Ver exactamente qué píxeles se agregan en cada paso.
-- Practicar un mismo objeto en diferentes resoluciones.
-- Comprender cuánto detalle conviene usar según el tamaño del sprite.
-- Crear una biblioteca ampliable de tutoriales.
-- Preparar una futura generación asistida por IA.
+- 8×8
+- 12×12
+- 16×16
+- 24×24
+- 32×32
+- 48×48
+- 64×64
 
-## 🧩 Versión actual — v0.3.3
+Los tutoriales de la manzana siguen disponibles en 8×8, 16×16 y 32×32. Los demás tamaños funcionan como modo libre de producción y animación.
 
-### Formatos
-
-- 8×8 · Mini.
-- 16×16 · Clásico.
-- 32×32 · Detallado.
-
-### Herramientas de dibujo
+### Herramientas de dibujo y color
 
 - ✏️ Lápiz con dibujo continuo.
 - 🧽 Borrador.
@@ -33,83 +27,67 @@ Crear un estudio de pixel art que permita:
 - ╱ Línea.
 - ▭ Rectángulo.
 - ◯ Elipse/círculo.
-- Selector de color y paleta rápida.
+- Selector de color.
+- Paleta rápida.
+- ☀️ Aclarar color activo.
+- 🌑 Oscurecer color activo.
 
 ### Utilidades
 
 - Deshacer y rehacer.
-- Historial de hasta 60 estados.
+- Historial de estados.
 - Voltear horizontal y vertical.
 - Rotar 90°.
 - Mostrar/ocultar cuadrícula.
-- Zoom.
+- Zoom ampliado para lienzos grandes.
 - Coordenadas y contador de píxeles.
 - Exportar PNG.
-- Panel visible de atajos.
 
-### 🤖 AI Lab — prototipo local
+## 🎞️ Animation Lab
 
-La v0.3.3 introduce la primera estructura pensada específicamente para la futura IA.
+La v0.4 introduce el primer editor de animaciones por frames.
 
-El usuario puede definir:
+Funciones actuales:
 
-- objeto a dibujar;
-- categoría;
-- tamaño 8×8, 16×16 o 32×32;
-- estilo visual;
-- nivel de detalle;
-- tipo de paleta;
-- iluminación;
-- perspectiva;
-- fondo;
-- tipo de contorno;
-- cantidad de pasos del tutorial;
-- notas adicionales.
+- crear frame vacío;
+- duplicar el frame actual;
+- eliminar frames;
+- cambiar entre frames desde una línea de tiempo con miniaturas;
+- reproducir la animación;
+- seleccionar 2, 4, 6, 8 o 12 FPS;
+- detener la reproducción;
+- conservar un dibujo diferente en cada frame;
+- exportar todos los frames como un spritesheet horizontal PNG.
 
-Por ahora **no se llama a ninguna API ni modelo de IA**. El sistema genera una especificación local estructurada (`pixel-art-studio-spec-v1`) que puede:
+Esto prepara el proyecto para animaciones como caminar, dormir, levantarse, sentarse, expresiones, objetos animados y transiciones simples.
 
-- previsualizarse;
-- copiarse como JSON;
-- aplicar el tamaño seleccionado al editor.
+## 🤖 AI Lab
 
-Esta especificación será la base para enviar solicitudes consistentes a una IA real en una versión futura.
+El AI Lab continúa siendo un prototipo local. Ahora contempla no solo objetos sino también:
 
-La salida esperada de la futura IA será:
+- personajes;
+- animaciones;
+- escenas;
+- assets de entorno.
 
-1. paleta recomendada;
-2. sprite final;
-3. pasos de construcción;
-4. coordenadas de píxeles por paso;
-5. colores por píxel cuando sea necesario;
-6. guía gráfica acumulativa compatible con el sistema actual de tutoriales.
+Incluye opciones para tamaño, estilo RUMBO, detalle, paleta, iluminación, perspectiva, fondo, contorno, pasos y notas adicionales.
 
-El AI Lab incluye pequeños presets locales para reconocer ideas como manzana, espada, árbol, cofre, casa y personaje y sugerir opciones iniciales.
+Todavía no se llama a una IA real. La especificación estructurada será la entrada del futuro generador.
 
-### Tutorial gráfico actual
+## 🎮 Dirección para RUMBO
 
-La manzana continúa siendo el objeto de práctica principal:
+Pixel Art Studios mantendrá una regla central: **todo el flujo visual será pixel art**.
 
-- **8×8:** forma esencial.
-- **16×16:** contorno, relleno, luces y sombras.
-- **32×32:** mayor detalle, curvas y tonos intermedios.
+A futuro, el preset RUMBO servirá para mantener consistencia entre:
 
-## 📁 Estructura
-
-```text
-Pixel-Art-Studios/
-├── index.html
-├── README.md
-├── css/
-│   └── styles.css
-├── js/
-│   ├── app.js
-│   ├── canvas.js
-│   ├── tutorials.js
-│   └── ai-prep.js
-└── data/
-    └── objects/
-        └── apple.json
-```
+- personajes;
+- objetos;
+- habitaciones;
+- ciudades;
+- tilesets;
+- animaciones;
+- efectos;
+- escenas y transiciones.
 
 ## ⌨️ Atajos actuales
 
@@ -123,67 +101,68 @@ Pixel-Art-Studios/
 - `Ctrl + Z` — deshacer.
 - `Ctrl + Y` o `Ctrl + Shift + Z` — rehacer.
 
-## 🗺️ Ideas futuras
+## 📁 Estructura
 
-- Conectar el AI Lab a una IA real.
-- Convertir la respuesta de IA directamente en tutoriales gráficos.
-- Validar automáticamente la estructura generada.
-- Biblioteca y buscador de objetos.
-- Selección y movimiento de áreas.
-- Copiar/pegar selecciones.
-- Capas.
-- Fondo transparente.
-- Paletas guardadas.
-- Personajes y animaciones.
-- Escenarios y tilesets.
-- Estilos adicionales.
+```text
+Pixel-Art-Studios/
+├── index.html
+├── README.md
+├── css/
+│   └── styles.css
+├── js/
+│   ├── app.js
+│   ├── canvas.js
+│   ├── tutorials.js
+│   ├── animation.js
+│   └── ai-prep.js
+└── data/
+    └── objects/
+        └── apple.json
+```
 
 ---
 
 # 📓 Bitácora de desarrollo
 
-## 31 de agosto de 2026 — Inicio del proyecto
-
 ### v0.1 — Base inicial
-
-- [x] Crear estructura, interfaz y cuadrícula 16×16.
-- [x] Añadir lápiz, borrador, color y primer tutorial.
+- [x] Crear interfaz, cuadrícula y herramientas básicas.
 
 ### v0.2 — Tutoriales gráficos
-
-- [x] Añadir guía visual por coordenadas y pasos acumulativos.
+- [x] Añadir instrucciones visuales por pasos.
 
 ### v0.2.1 — Pintura continua
-
-- [x] Pintar y borrar manteniendo presionado y arrastrando.
+- [x] Dibujar manteniendo presionado y arrastrando.
 
 ### v0.3 — Herramientas y formatos
-
-- [x] Añadir 8×8, 16×16 y 32×32.
-- [x] Adaptar la manzana a cada resolución.
+- [x] Añadir formatos y herramientas adicionales.
 
 ### v0.3.1 — Corrección funcional
-
-- [x] Hacer funcionales herramientas, historial, zoom, cuadrícula y PNG.
+- [x] Hacer funcionales todas las herramientas principales.
 
 ### v0.3.2 — Formas y transformaciones
-
-- [x] Añadir elipse, volteos y rotación.
+- [x] Elipse, volteos y rotación.
 
 ### v0.3.3 — Preparación para IA
+- [x] AI Lab y especificación estructurada.
 
-- [x] Añadir AI Lab.
-- [x] Añadir entrada libre de objeto.
-- [x] Añadir categoría, tamaño, estilo y detalle.
-- [x] Añadir paleta, iluminación, perspectiva y fondo.
-- [x] Añadir contorno, número de pasos y notas extra.
-- [x] Generar una especificación local estructurada.
-- [x] Copiar la especificación como JSON.
-- [x] Aplicar el tamaño elegido al editor.
-- [x] Añadir presets locales básicos.
-- [x] Añadir panel visible de atajos.
-- [ ] Conectar una IA real.
-- [ ] Convertir la respuesta de IA en un tutorial cargable.
+### v0.4 — Producción y animación
+- [x] Añadir 12×12, 24×24, 48×48 y 64×64.
+- [x] Mantener tutoriales solo donde existe contenido específico.
+- [x] Añadir modo libre para otros tamaños.
+- [x] Añadir aclarar y oscurecer color.
+- [x] Exponer estado del lienzo para frames.
+- [x] Crear Animation Lab.
+- [x] Añadir frames vacíos.
+- [x] Duplicar y eliminar frames.
+- [x] Añadir timeline con miniaturas.
+- [x] Añadir reproducción configurable por FPS.
+- [x] Exportar spritesheet horizontal.
+- [x] Ampliar AI Lab a animaciones y escenas.
+- [ ] Onion skin.
+- [ ] Duración individual por frame.
+- [ ] Exportar GIF/APNG.
+- [ ] Biblioteca de personajes y assets base.
+- [ ] Conectar IA real.
 
 ## 🛠️ Tecnologías
 
@@ -191,4 +170,4 @@ Pixel-Art-Studios/
 - CSS3
 - JavaScript
 
-Por ahora no se utilizan frameworks para mantener el proyecto sencillo, rápido y fácil de comprender.
+Por ahora no se utilizan frameworks para mantener el proyecto sencillo y fácil de controlar.
