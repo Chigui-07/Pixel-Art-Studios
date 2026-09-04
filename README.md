@@ -4,7 +4,7 @@ Pixel Art Studios es una aplicación web para **aprender, practicar, crear y ani
 
 La meta es que el estudio sirva tanto para aprender como para producir assets reales: objetos, personajes, animaciones, escenas, tilesets y efectos, siempre en pixel art.
 
-## 🧩 Versión actual — v0.4
+## 🧩 Versión actual — v0.4.1
 
 ### Formatos del editor
 
@@ -39,13 +39,13 @@ Los tutoriales de la manzana siguen disponibles en 8×8, 16×16 y 32×32. Los de
 - Voltear horizontal y vertical.
 - Rotar 90°.
 - Mostrar/ocultar cuadrícula.
-- Zoom ampliado para lienzos grandes.
+- Zoom para lienzos grandes.
 - Coordenadas y contador de píxeles.
 - Exportar PNG.
 
 ## 🎞️ Animation Lab
 
-La v0.4 introduce el primer editor de animaciones por frames.
+El Animation Lab trabaja con frames reales, cada uno con su propio estado del lienzo.
 
 Funciones actuales:
 
@@ -53,18 +53,41 @@ Funciones actuales:
 - duplicar el frame actual;
 - eliminar frames;
 - cambiar entre frames desde una línea de tiempo con miniaturas;
-- reproducir la animación;
-- seleccionar 2, 4, 6, 8 o 12 FPS;
+- mover el frame actual hacia la izquierda o derecha;
+- activar/desactivar onion skin;
+- ajustar la opacidad del onion skin;
+- usar el frame anterior como referencia visual tenue;
+- asignar una duración individual en milisegundos a cada frame;
+- usar el selector de FPS como duración base rápida;
+- reproducir la animación respetando la duración de cada frame;
 - detener la reproducción;
 - conservar un dibujo diferente en cada frame;
 - exportar todos los frames como un spritesheet horizontal PNG.
 
-Esto prepara el proyecto para animaciones como caminar, dormir, levantarse, sentarse, expresiones, objetos animados y transiciones simples.
+Esto permite empezar a construir animaciones como caminar, dormir, levantarse, sentarse, expresiones, objetos animados y transiciones simples.
+
+### Duración por frame
+
+Cada frame guarda ahora su propio `durationMs`. Por ejemplo, una animación puede usar:
+
+- Frame 1: 500 ms
+- Frame 2: 120 ms
+- Frame 3: 120 ms
+- Frame 4: 800 ms
+
+Esto permite pausas naturales sin tener que duplicar muchos frames.
+
+### Onion skin
+
+El onion skin muestra los píxeles dibujados del frame anterior sobre las zonas vacías del frame actual. Es solamente una referencia visual: **no modifica ni mezcla los píxeles reales del frame**.
+
+La opacidad puede ajustarse desde el Animation Lab.
 
 ## 🤖 AI Lab
 
-El AI Lab continúa siendo un prototipo local. Ahora contempla no solo objetos sino también:
+El AI Lab continúa siendo un prototipo local. Contempla:
 
+- objetos;
 - personajes;
 - animaciones;
 - escenas;
@@ -76,9 +99,9 @@ Todavía no se llama a una IA real. La especificación estructurada será la ent
 
 ## 🎮 Dirección para RUMBO
 
-Pixel Art Studios mantendrá una regla central: **todo el flujo visual será pixel art**.
+Pixel Art Studios mantiene una regla central: **todo el flujo visual será pixel art**.
 
-A futuro, el preset RUMBO servirá para mantener consistencia entre:
+El preset RUMBO servirá para mantener consistencia entre:
 
 - personajes;
 - objetos;
@@ -88,6 +111,8 @@ A futuro, el preset RUMBO servirá para mantener consistencia entre:
 - animaciones;
 - efectos;
 - escenas y transiciones.
+
+Una meta importante será guardar personajes base como Nicolás, Molly y Emily para que las futuras animaciones y la IA puedan reutilizar el mismo diseño visual en todos los frames.
 
 ## ⌨️ Atajos actuales
 
@@ -158,8 +183,18 @@ Pixel-Art-Studios/
 - [x] Añadir reproducción configurable por FPS.
 - [x] Exportar spritesheet horizontal.
 - [x] Ampliar AI Lab a animaciones y escenas.
-- [ ] Onion skin.
-- [ ] Duración individual por frame.
+
+### v0.4.1 — Animación avanzada
+- [x] Añadir onion skin usando el frame anterior.
+- [x] Permitir activar/desactivar onion skin.
+- [x] Añadir control de opacidad del onion skin.
+- [x] Añadir duración individual por frame en milisegundos.
+- [x] Reproducir respetando la duración de cada frame.
+- [x] Añadir movimiento de frames hacia izquierda/derecha.
+- [x] Mostrar duración en cada miniatura del timeline.
+- [x] Mantener onion skin separado del dibujo real.
+- [ ] Copiar y pegar frames entre animaciones.
+- [ ] Guardar animaciones como proyectos/assets.
 - [ ] Exportar GIF/APNG.
 - [ ] Biblioteca de personajes y assets base.
 - [ ] Conectar IA real.
