@@ -9,6 +9,9 @@ window.PixelCanvas = (() => {
   let lastPaintedPixel = null;
   let shapeStart = null;
   let shapeEnd = null;
+  let moveStart = null;
+  let moveOrigin = null;
+  let moveOffset = { x: 0, y: 0 };
   let history = [];
   let historyIndex = -1;
   let zoom = 1;
@@ -21,17 +24,13 @@ window.PixelCanvas = (() => {
     if (!color) return EMPTY;
     if (color.startsWith("rgb")) {
       const values = color.match(/\d+/g)?.slice(0, 3).map(Number) || [255, 255, 255];
-      return `#${values.map(value => value.toString(16).padStart(2, "0")).join("")}`;
+      return `#${values.map(v => v.toString(16).padStart(2, "0")).join("")}`;
     }
     return color.toLowerCase();
   }
 
   function getPixels() { return [...canvas.children]; }
-
-  function getPixelColor(pixel) {
-    if (!pixel) return EMPTY;
-    return normalizeColor(pixel.style.background || EMPTY);
-  }
+  function getPixelColor(pixel) { return pixel ? normalizeColor(pixel.style.background || EMPTY) : EMPTY; }
 
   function setPixelColor(pixel, color) {
     if (!pixel) return;
@@ -117,11 +116,10 @@ window.PixelCanvas = (() => {
     const target = getPixelColor(startPixel);
     const replacement = normalizeColor(currentColor);
     if (target === replacement) return false;
-
     const start = coordsFromPixel(startPixel);
     const queue = [start];
-    let cursor = 0;
     const visited = new Set();
+    let cursor = 0;
 
     while (cursor < queue.length) {
       const point = queue[cursor++];
@@ -132,28 +130,20 @@ window.PixelCanvas = (() => {
       if (!pixel || getPixelColor(pixel) !== target) continue;
       setPixelColor(pixel, replacement);
       queue.push(
-        { x: point.x + 1, y: point.y },
-        { x: point.x - 1, y: point.y },
-        { x: point.x, y: point.y + 1 },
-        { x: point.x, y: point.y - 1 }
+        { x: point.x + 1, y: point.y }, { x: point.x - 1, y: point.y },
+        { x: point.x, y: point.y + 1 }, { x: point.x, y: point.y - 1 }
       );
     }
-
     updateCounter();
     return true;
   }
 
   function drawLine(from, to) {
-    let x0 = from.x;
-    let y0 = from.y;
-    const x1 = to.x;
-    const y1 = to.y;
-    const dx = Math.abs(x1 - x0);
-    const sx = x0 < x1 ? 1 : -1;
-    const dy = -Math.abs(y1 - y0);
-    const sy = y0 < y1 ? 1 : -1;
+    let x0 = from.x, y0 = from.y;
+    const x1 = to.x, y1 = to.y;
+    const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     let error = dx + dy;
-
     while (true) {
       setPixelColor(pixelAt(x0, y0), currentColor);
       if (x0 === x1 && y0 === y1) break;
@@ -164,11 +154,8 @@ window.PixelCanvas = (() => {
   }
 
   function drawRectangle(from, to) {
-    const minX = Math.min(from.x, to.x);
-    const maxX = Math.max(from.x, to.x);
-    const minY = Math.min(from.y, to.y);
-    const maxY = Math.max(from.y, to.y);
-
+    const minX = Math.min(from.x, to.x), maxX = Math.max(from.x, to.x);
+    const minY = Math.min(from.y, to.y), maxY = Math.max(from.y, to.y);
     for (let x = minX; x <= maxX; x++) {
       setPixelColor(pixelAt(x, minY), currentColor);
       setPixelColor(pixelAt(x, maxY), currentColor);
@@ -180,32 +167,40 @@ window.PixelCanvas = (() => {
   }
 
   function drawEllipse(from, to) {
-    const minX = Math.min(from.x, to.x);
-    const maxX = Math.max(from.x, to.x);
-    const minY = Math.min(from.y, to.y);
-    const maxY = Math.max(from.y, to.y);
-    const rx = (maxX - minX) / 2;
-    const ry = (maxY - minY) / 2;
-    const cx = minX + rx;
-    const cy = minY + ry;
-
-    if (rx === 0 || ry === 0) {
-      drawLine(from, to);
-      return;
-    }
-
+    const minX = Math.min(from.x, to.x), maxX = Math.max(from.x, to.x);
+    const minY = Math.min(from.y, to.y), maxY = Math.max(from.y, to.y);
+    const rx = (maxX - minX) / 2, ry = (maxY - minY) / 2;
+    const cx = minX + rx, cy = minY + ry;
+    if (rx === 0 || ry === 0) return drawLine(from, to);
     const points = new Set();
     const steps = Math.max(24, Math.ceil(Math.PI * 2 * Math.max(rx, ry) * 2));
     for (let i = 0; i < steps; i++) {
       const angle = (i / steps) * Math.PI * 2;
-      const x = Math.round(cx + rx * Math.cos(angle));
-      const y = Math.round(cy + ry * Math.sin(angle));
-      points.add(`${x},${y}`);
+      points.add(`${Math.round(cx + rx * Math.cos(angle))},${Math.round(cy + ry * Math.sin(angle))}`);
     }
     points.forEach(key => {
       const [x, y] = key.split(",").map(Number);
       setPixelColor(pixelAt(x, y), currentColor);
     });
+  }
+
+  function shiftedState(origin, dx, dy) {
+    const result = new Array(size * size).fill(EMPTY);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const color = origin[y * size + x];
+        if (color === EMPTY) continue;
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && nx < size && ny >= 0 && ny < size) result[ny * size + nx] = color;
+      }
+    }
+    return result;
+  }
+
+  function previewMove(coords) {
+    if (!moveStart || !moveOrigin) return;
+    moveOffset = { x: coords.x - moveStart.x, y: coords.y - moveStart.y };
+    restore(shiftedState(moveOrigin, moveOffset.x, moveOffset.y));
   }
 
   function finishShape() {
@@ -221,11 +216,12 @@ window.PixelCanvas = (() => {
   function stopDrawing() {
     if (!drawing) return;
     if (["line", "rect", "ellipse"].includes(currentTool)) finishShape();
-    else if (currentTool === "pencil" || currentTool === "eraser") pushHistory();
+    else if (["pencil", "eraser", "move"].includes(currentTool)) pushHistory();
     drawing = false;
     lastPaintedPixel = null;
-    shapeStart = null;
-    shapeEnd = null;
+    shapeStart = shapeEnd = null;
+    moveStart = moveOrigin = null;
+    moveOffset = { x: 0, y: 0 };
   }
 
   function buildGrid(newSize = size) {
@@ -268,10 +264,17 @@ window.PixelCanvas = (() => {
 
     drawing = true;
     lastPaintedPixel = null;
-    if (["line", "rect", "ellipse"].includes(currentTool)) {
+
+    if (currentTool === "move") {
+      moveStart = coords;
+      moveOrigin = snapshot();
+      moveOffset = { x: 0, y: 0 };
+    } else if (["line", "rect", "ellipse"].includes(currentTool)) {
       shapeStart = coords;
       shapeEnd = coords;
-    } else applyDirect(pixel);
+    } else {
+      applyDirect(pixel);
+    }
 
     try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
     event.preventDefault();
@@ -283,15 +286,16 @@ window.PixelCanvas = (() => {
       const coords = coordsFromPixel(pixel);
       coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
       if (drawing && ["line", "rect", "ellipse"].includes(currentTool)) shapeEnd = coords;
+      if (drawing && currentTool === "move") previewMove(coords);
     }
-    if (!drawing || (currentTool !== "pencil" && currentTool !== "eraser")) return;
+    if (!drawing || !["pencil", "eraser"].includes(currentTool)) return;
     if (pixel) applyDirect(pixel);
     event.preventDefault();
   });
 
   canvas.addEventListener("pointerleave", () => {
     coordinateLabel.textContent = "x: — · y: —";
-    if (drawing && (currentTool === "pencil" || currentTool === "eraser")) lastPaintedPixel = null;
+    if (drawing && ["pencil", "eraser"].includes(currentTool)) lastPaintedPixel = null;
   });
 
   canvas.addEventListener("pointerup", event => {
@@ -304,17 +308,12 @@ window.PixelCanvas = (() => {
   window.addEventListener("blur", stopDrawing);
   canvas.addEventListener("contextmenu", event => event.preventDefault());
 
-  function setTool(tool) {
-    stopDrawing();
-    currentTool = tool;
-  }
-
+  function setTool(tool) { stopDrawing(); currentTool = tool; }
   function setColor(color) { currentColor = normalizeColor(color); }
   function getColor() { return currentColor; }
 
   function clear() {
-    const hasPaint = getPixels().some(pixel => pixel.dataset.painted === "true");
-    if (!hasPaint) return false;
+    if (!getPixels().some(pixel => pixel.dataset.painted === "true")) return false;
     getPixels().forEach(pixel => setPixelColor(pixel, EMPTY));
     updateCounter();
     pushHistory();
@@ -326,9 +325,8 @@ window.PixelCanvas = (() => {
     const after = new Array(before.length).fill(EMPTY);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        const sourceIndex = y * size + x;
         const target = transformer(x, y);
-        after[target.y * size + target.x] = before[sourceIndex];
+        after[target.y * size + target.x] = before[y * size + x];
       }
     }
     restore(after);
@@ -339,12 +337,8 @@ window.PixelCanvas = (() => {
   function flipHorizontal() { return transformState((x, y) => ({ x: size - 1 - x, y })); }
   function flipVertical() { return transformState((x, y) => ({ x, y: size - 1 - y })); }
   function rotate90() { return transformState((x, y) => ({ x: size - 1 - y, y: x })); }
-
   function resize(newSize) { buildGrid(newSize); }
-
-  function getState() {
-    return { size, pixels: snapshot() };
-  }
+  function getState() { return { size, pixels: snapshot() }; }
 
   function loadState(state, options = {}) {
     if (!state || !Array.isArray(state.pixels)) return false;
