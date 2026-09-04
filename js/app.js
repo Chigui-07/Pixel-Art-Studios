@@ -1,3 +1,18 @@
+const toolGridElement = document.querySelector(".tool-buttons.tool-grid");
+const handBtn = document.createElement("button");
+handBtn.id = "handBtn";
+handBtn.type = "button";
+handBtn.textContent = "🖐️ Mano";
+toolGridElement?.appendChild(handBtn);
+
+const handStyle = document.createElement("style");
+handStyle.textContent = `
+  .canvas-viewport.hand-mode { cursor: grab; }
+  .canvas-viewport.hand-mode.dragging { cursor: grabbing; }
+  .canvas-viewport.hand-mode .pixel-canvas { cursor: inherit; }
+`;
+document.head.appendChild(handStyle);
+
 const toolButtons = {
   pencil: document.getElementById("pencilBtn"),
   eraser: document.getElementById("eraserBtn"),
@@ -5,12 +20,13 @@ const toolButtons = {
   eyedropper: document.getElementById("eyedropperBtn"),
   line: document.getElementById("lineBtn"),
   rect: document.getElementById("rectBtn"),
-  ellipse: document.getElementById("ellipseBtn")
+  ellipse: document.getElementById("ellipseBtn"),
+  hand: handBtn
 };
 
 const toolNames = {
   pencil: "Lápiz", eraser: "Borrador", fill: "Relleno", eyedropper: "Cuentagotas",
-  line: "Línea", rect: "Rectángulo", ellipse: "Elipse"
+  line: "Línea", rect: "Rectángulo", ellipse: "Elipse", hand: "Mano"
 };
 
 const toolMessages = {
@@ -20,7 +36,8 @@ const toolMessages = {
   eyedropper: "Cuentagotas activo: haz clic en cualquier píxel para tomar su color.",
   line: "Línea activa: presiona el inicio y suelta en el final.",
   rect: "Rectángulo activo: presiona una esquina y suelta en la opuesta.",
-  ellipse: "Elipse activa: presiona una esquina del área y suelta en la opuesta."
+  ellipse: "Elipse activa: presiona una esquina del área y suelta en la opuesta.",
+  hand: "Mano activa: arrastra para desplazarte sin pintar."
 };
 
 const clearBtn = document.getElementById("clearBtn");
@@ -55,6 +72,7 @@ const guideCanvas = document.getElementById("guideCanvas");
 const stepColorSwatch = document.getElementById("stepColorSwatch");
 const stepColorName = document.getElementById("stepColorName");
 const formatTabs = [...document.querySelectorAll(".format-tab")];
+const canvasViewport = document.getElementById("canvasViewport");
 
 const paletteColors = [
   "#74232a", "#8f2d2d", "#d13b46", "#d94343", "#e94f55", "#ff7468",
@@ -66,6 +84,13 @@ let currentSize = 16;
 let currentStep = 0;
 let gridVisible = true;
 let statusTimer = null;
+let activeTool = "pencil";
+let temporaryHand = false;
+let panning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panScrollLeft = 0;
+let panScrollTop = 0;
 
 function showStatus(message) {
   actionStatus.textContent = message;
@@ -107,12 +132,54 @@ function buildPalette() {
   });
 }
 
+function refreshHandCursor() {
+  const handMode = activeTool === "hand" || temporaryHand;
+  canvasViewport?.classList.toggle("hand-mode", handMode);
+  if (!handMode) canvasViewport?.classList.remove("dragging");
+}
+
 function setActiveTool(tool) {
+  activeTool = tool;
   Object.entries(toolButtons).forEach(([name, button]) => button.classList.toggle("active", name === tool));
   toolStatus.textContent = toolNames[tool];
   window.PixelCanvas.setTool(tool);
+  refreshHandCursor();
   showStatus(toolMessages[tool]);
 }
+
+function isHandMode() {
+  return activeTool === "hand" || temporaryHand;
+}
+
+function startPan(event) {
+  if (!isHandMode() || !canvasViewport) return;
+  panning = true;
+  panStartX = event.clientX;
+  panStartY = event.clientY;
+  panScrollLeft = canvasViewport.scrollLeft;
+  panScrollTop = canvasViewport.scrollTop;
+  canvasViewport.classList.add("dragging");
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+function movePan(event) {
+  if (!panning || !canvasViewport) return;
+  canvasViewport.scrollLeft = panScrollLeft - (event.clientX - panStartX);
+  canvasViewport.scrollTop = panScrollTop - (event.clientY - panStartY);
+  event.preventDefault();
+}
+
+function stopPan() {
+  if (!panning) return;
+  panning = false;
+  canvasViewport?.classList.remove("dragging");
+}
+
+canvasViewport?.addEventListener("pointerdown", startPan, true);
+window.addEventListener("pointermove", movePan);
+window.addEventListener("pointerup", stopPan);
+window.addEventListener("pointercancel", stopPan);
 
 function buildGuideCanvas() {
   const tutorial = currentTutorial();
@@ -244,6 +311,14 @@ window.addEventListener("pixelcolorpicked", event => setColor(event.detail.color
 document.addEventListener("keydown", event => {
   const tag = document.activeElement?.tagName;
   if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
+
+  if (event.code === "Space" && !event.repeat) {
+    event.preventDefault();
+    temporaryHand = true;
+    refreshHandCursor();
+    return;
+  }
+
   const key = event.key.toLowerCase();
   if ((event.ctrlKey || event.metaKey) && key === "z") {
     event.preventDefault();
@@ -255,8 +330,21 @@ document.addEventListener("keydown", event => {
     window.PixelCanvas.redo();
     return;
   }
-  const shortcuts = { p: "pencil", e: "eraser", f: "fill", i: "eyedropper", l: "line", r: "rect", o: "ellipse" };
+  const shortcuts = { p: "pencil", e: "eraser", f: "fill", i: "eyedropper", l: "line", r: "rect", o: "ellipse", h: "hand" };
   if (shortcuts[key]) setActiveTool(shortcuts[key]);
+});
+
+document.addEventListener("keyup", event => {
+  if (event.code !== "Space") return;
+  temporaryHand = false;
+  stopPan();
+  refreshHandCursor();
+});
+
+window.addEventListener("blur", () => {
+  temporaryHand = false;
+  stopPan();
+  refreshHandCursor();
 });
 
 buildPalette();
