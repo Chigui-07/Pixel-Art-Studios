@@ -26,9 +26,7 @@ window.PixelCanvas = (() => {
     return color.toLowerCase();
   }
 
-  function getPixels() {
-    return [...canvas.children];
-  }
+  function getPixels() { return [...canvas.children]; }
 
   function getPixelColor(pixel) {
     if (!pixel) return EMPTY;
@@ -47,9 +45,7 @@ window.PixelCanvas = (() => {
     paintedPixels.textContent = `${count} píxel${count === 1 ? "" : "es"} usado${count === 1 ? "" : "s"}`;
   }
 
-  function snapshot() {
-    return getPixels().map(getPixelColor);
-  }
+  function snapshot() { return getPixels().map(getPixelColor); }
 
   function restore(state) {
     if (!state || state.length !== size * size) return;
@@ -61,7 +57,6 @@ window.PixelCanvas = (() => {
     const state = snapshot();
     const last = history[historyIndex];
     if (last && last.every((color, index) => color === state[index])) return;
-
     history = history.slice(0, historyIndex + 1);
     history.push(state);
     if (history.length > MAX_HISTORY) history.shift();
@@ -85,13 +80,8 @@ window.PixelCanvas = (() => {
     return true;
   }
 
-  function canUndo() {
-    return historyIndex > 0;
-  }
-
-  function canRedo() {
-    return historyIndex < history.length - 1;
-  }
+  function canUndo() { return historyIndex > 0; }
+  function canRedo() { return historyIndex < history.length - 1; }
 
   function coordsFromPixel(pixel) {
     const index = Number(pixel.dataset.index);
@@ -131,10 +121,8 @@ window.PixelCanvas = (() => {
       const key = `${point.x},${point.y}`;
       if (visited.has(key)) continue;
       visited.add(key);
-
       const pixel = pixelAt(point.x, point.y);
       if (!pixel || getPixelColor(pixel) !== target) continue;
-
       setPixelColor(pixel, replacement);
       queue.push(
         { x: point.x + 1, y: point.y },
@@ -163,14 +151,8 @@ window.PixelCanvas = (() => {
       setPixelColor(pixelAt(x0, y0), currentColor);
       if (x0 === x1 && y0 === y1) break;
       const twice = 2 * error;
-      if (twice >= dy) {
-        error += dy;
-        x0 += sx;
-      }
-      if (twice <= dx) {
-        error += dx;
-        y0 += sy;
-      }
+      if (twice >= dy) { error += dy; x0 += sx; }
+      if (twice <= dx) { error += dx; y0 += sy; }
     }
   }
 
@@ -190,10 +172,40 @@ window.PixelCanvas = (() => {
     }
   }
 
+  function drawEllipse(from, to) {
+    const minX = Math.min(from.x, to.x);
+    const maxX = Math.max(from.x, to.x);
+    const minY = Math.min(from.y, to.y);
+    const maxY = Math.max(from.y, to.y);
+    const rx = (maxX - minX) / 2;
+    const ry = (maxY - minY) / 2;
+    const cx = minX + rx;
+    const cy = minY + ry;
+
+    if (rx === 0 || ry === 0) {
+      drawLine(from, to);
+      return;
+    }
+
+    const points = new Set();
+    const steps = Math.max(24, Math.ceil(Math.PI * 2 * Math.max(rx, ry) * 2));
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * Math.PI * 2;
+      const x = Math.round(cx + rx * Math.cos(angle));
+      const y = Math.round(cy + ry * Math.sin(angle));
+      points.add(`${x},${y}`);
+    }
+    points.forEach(key => {
+      const [x, y] = key.split(",").map(Number);
+      setPixelColor(pixelAt(x, y), currentColor);
+    });
+  }
+
   function finishShape() {
     if (!shapeStart || !shapeEnd) return false;
     if (currentTool === "line") drawLine(shapeStart, shapeEnd);
     if (currentTool === "rect") drawRectangle(shapeStart, shapeEnd);
+    if (currentTool === "ellipse") drawEllipse(shapeStart, shapeEnd);
     updateCounter();
     pushHistory();
     return true;
@@ -201,13 +213,8 @@ window.PixelCanvas = (() => {
 
   function stopDrawing() {
     if (!drawing) return;
-
-    if (currentTool === "line" || currentTool === "rect") {
-      finishShape();
-    } else if (currentTool === "pencil" || currentTool === "eraser") {
-      pushHistory();
-    }
-
+    if (["line", "rect", "ellipse"].includes(currentTool)) finishShape();
+    else if (currentTool === "pencil" || currentTool === "eraser") pushHistory();
     drawing = false;
     lastPaintedPixel = null;
     shapeStart = null;
@@ -219,7 +226,6 @@ window.PixelCanvas = (() => {
     canvas.innerHTML = "";
     canvas.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
     canvas.setAttribute("aria-label", `Lienzo de pixel art de ${size} por ${size}`);
-
     for (let i = 0; i < size * size; i++) {
       const pixel = document.createElement("div");
       pixel.className = "pixel";
@@ -228,7 +234,6 @@ window.PixelCanvas = (() => {
       pixel.style.background = EMPTY;
       canvas.appendChild(pixel);
     }
-
     history = [];
     historyIndex = -1;
     updateCounter();
@@ -238,7 +243,6 @@ window.PixelCanvas = (() => {
   canvas.addEventListener("pointerdown", event => {
     const pixel = event.target.closest(".pixel");
     if (!pixel) return;
-
     const coords = coordsFromPixel(pixel);
     coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
 
@@ -258,33 +262,22 @@ window.PixelCanvas = (() => {
 
     drawing = true;
     lastPaintedPixel = null;
-
-    if (currentTool === "line" || currentTool === "rect") {
+    if (["line", "rect", "ellipse"].includes(currentTool)) {
       shapeStart = coords;
       shapeEnd = coords;
-    } else {
-      applyDirect(pixel);
-    }
+    } else applyDirect(pixel);
 
-    try {
-      canvas.setPointerCapture(event.pointerId);
-    } catch (_) {}
-
+    try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
     event.preventDefault();
   });
 
   canvas.addEventListener("pointermove", event => {
     const pixel = pixelFromPointer(event);
-
     if (pixel) {
       const coords = coordsFromPixel(pixel);
       coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
-
-      if (drawing && (currentTool === "line" || currentTool === "rect")) {
-        shapeEnd = coords;
-      }
+      if (drawing && ["line", "rect", "ellipse"].includes(currentTool)) shapeEnd = coords;
     }
-
     if (!drawing || (currentTool !== "pencil" && currentTool !== "eraser")) return;
     if (pixel) applyDirect(pixel);
     event.preventDefault();
@@ -292,15 +285,11 @@ window.PixelCanvas = (() => {
 
   canvas.addEventListener("pointerleave", () => {
     coordinateLabel.textContent = "x: — · y: —";
-    if (drawing && (currentTool === "pencil" || currentTool === "eraser")) {
-      lastPaintedPixel = null;
-    }
+    if (drawing && (currentTool === "pencil" || currentTool === "eraser")) lastPaintedPixel = null;
   });
 
   canvas.addEventListener("pointerup", event => {
-    try {
-      canvas.releasePointerCapture(event.pointerId);
-    } catch (_) {}
+    try { canvas.releasePointerCapture(event.pointerId); } catch (_) {}
     stopDrawing();
   });
 
@@ -310,17 +299,12 @@ window.PixelCanvas = (() => {
   canvas.addEventListener("contextmenu", event => event.preventDefault());
 
   function setTool(tool) {
-    currentTool = tool;
     stopDrawing();
+    currentTool = tool;
   }
 
-  function setColor(color) {
-    currentColor = normalizeColor(color);
-  }
-
-  function getColor() {
-    return currentColor;
-  }
+  function setColor(color) { currentColor = normalizeColor(color); }
+  function getColor() { return currentColor; }
 
   function clear() {
     const hasPaint = getPixels().some(pixel => pixel.dataset.painted === "true");
@@ -331,9 +315,26 @@ window.PixelCanvas = (() => {
     return true;
   }
 
-  function resize(newSize) {
-    buildGrid(newSize);
+  function transformState(transformer) {
+    const before = snapshot();
+    const after = new Array(before.length).fill(EMPTY);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const sourceIndex = y * size + x;
+        const target = transformer(x, y);
+        after[target.y * size + target.x] = before[sourceIndex];
+      }
+    }
+    restore(after);
+    pushHistory();
+    return true;
   }
+
+  function flipHorizontal() { return transformState((x, y) => ({ x: size - 1 - x, y })); }
+  function flipVertical() { return transformState((x, y) => ({ x, y: size - 1 - y })); }
+  function rotate90() { return transformState((x, y) => ({ x: size - 1 - y, y: x })); }
+
+  function resize(newSize) { buildGrid(newSize); }
 
   function toggleGrid(force) {
     const show = typeof force === "boolean" ? force : canvas.classList.contains("grid-hidden");
@@ -347,9 +348,7 @@ window.PixelCanvas = (() => {
     return zoom;
   }
 
-  function getZoom() {
-    return zoom;
-  }
+  function getZoom() { return zoom; }
 
   function exportPNG() {
     const output = document.createElement("canvas");
@@ -357,12 +356,10 @@ window.PixelCanvas = (() => {
     output.height = size;
     const context = output.getContext("2d");
     context.imageSmoothingEnabled = false;
-
     getPixels().forEach((pixel, index) => {
       context.fillStyle = getPixelColor(pixel);
       context.fillRect(index % size, Math.floor(index / size), 1, 1);
     });
-
     const link = document.createElement("a");
     link.download = `pixel-art-${size}x${size}.png`;
     link.href = output.toDataURL("image/png");
@@ -376,19 +373,8 @@ window.PixelCanvas = (() => {
   setZoom(1);
 
   return {
-    setTool,
-    setColor,
-    getColor,
-    clear,
-    resize,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    toggleGrid,
-    setZoom,
-    getZoom,
-    exportPNG,
+    setTool, setColor, getColor, clear, resize, undo, redo, canUndo, canRedo,
+    toggleGrid, setZoom, getZoom, exportPNG, flipHorizontal, flipVertical, rotate90,
     getSize: () => size
   };
 })();
