@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Art Studios</title>
-  <link rel="stylesheet" href="css/styles.css?v=0.3.2">
+  <link rel="stylesheet" href="css/styles.css?v=0.3.3">
 </head>
 <body>
   <header class="topbar">
@@ -12,14 +12,14 @@
       <p class="eyebrow">PIXEL ART STUDIOS</p>
       <h1>Aprende dibujando, píxel por píxel.</h1>
     </div>
-    <span class="version">v0.3.2</span>
+    <span class="version">v0.3.3</span>
   </header>
 
   <main class="studio-layout">
     <section class="panel tools-panel">
       <div class="panel-title-row">
         <h2>Herramientas</h2>
-        <span class="mini-badge">v0.3.2</span>
+        <span class="mini-badge">v0.3.3</span>
       </div>
 
       <div class="tool-group">
@@ -78,6 +78,12 @@
         <strong id="toolStatus">Lápiz</strong>
       </div>
       <p id="actionStatus" class="action-status" aria-live="polite">Listo para dibujar.</p>
+
+      <details class="shortcut-card">
+        <summary>⌨️ Atajos</summary>
+        <p>P lápiz · E borrador · F relleno · I cuentagotas · L línea · R rectángulo · O elipse</p>
+        <p>Ctrl+Z deshacer · Ctrl+Y rehacer</p>
+      </details>
 
       <p class="tool-tip">💡 Lápiz y borrador: arrastra. Línea, rectángulo y elipse: presiona un punto y suelta en el extremo opuesto.</p>
     </section>
@@ -139,10 +145,155 @@
     </aside>
   </main>
 
+  <section class="ai-lab-wrap">
+    <div class="panel ai-lab">
+      <div class="panel-title-row">
+        <div>
+          <p class="eyebrow">AI LAB · PROTOTIPO LOCAL</p>
+          <h2>Prepara lo que la IA deberá generar</h2>
+        </div>
+        <span class="mini-badge">sin API todavía</span>
+      </div>
+
+      <p class="ai-intro">Esta sección define el “pedido” de pixel art. Hoy genera una especificación local; después conectaremos esa misma estructura a una IA para producir paleta, pasos, coordenadas y guía gráfica automáticamente.</p>
+
+      <div class="ai-grid">
+        <label>¿Qué quieres dibujar?
+          <input id="aiObject" type="text" placeholder="Ej. espada medieval, gato, farol, árbol RPG">
+        </label>
+
+        <label>Categoría
+          <select id="aiCategory">
+            <option value="item">Objeto</option>
+            <option value="character">Personaje</option>
+            <option value="food">Comida</option>
+            <option value="nature">Naturaleza</option>
+            <option value="building">Edificio</option>
+            <option value="vehicle">Vehículo</option>
+            <option value="creature">Criatura</option>
+            <option value="tile">Tile / escenario</option>
+            <option value="icon">Icono / UI</option>
+          </select>
+        </label>
+
+        <label>Tamaño
+          <select id="aiSize">
+            <option value="8">8×8</option>
+            <option value="16" selected>16×16</option>
+            <option value="32">32×32</option>
+          </select>
+        </label>
+
+        <label>Estilo
+          <select id="aiStyle">
+            <option value="classic">Pixel art clásico</option>
+            <option value="8-bit">8-bit</option>
+            <option value="16-bit">16-bit</option>
+            <option value="rpg">RPG</option>
+            <option value="gameboy">Game Boy</option>
+            <option value="modern">Pixel art moderno</option>
+            <option value="cute">Cute / chibi</option>
+            <option value="dark">Oscuro</option>
+            <option value="isometric">Isométrico</option>
+          </select>
+        </label>
+
+        <label>Nivel de detalle
+          <select id="aiDetail">
+            <option value="minimal">Mínimo</option>
+            <option value="balanced" selected>Equilibrado</option>
+            <option value="detailed">Detallado</option>
+          </select>
+        </label>
+
+        <label>Paleta
+          <select id="aiPalette">
+            <option value="balanced">Equilibrada</option>
+            <option value="warm">Cálida</option>
+            <option value="cold">Fría</option>
+            <option value="natural">Natural</option>
+            <option value="pastel">Pastel</option>
+            <option value="vibrant">Vibrante</option>
+            <option value="metal">Metálica</option>
+            <option value="monochrome">Monocromática</option>
+            <option value="limited">Limitada</option>
+          </select>
+        </label>
+
+        <label>Iluminación
+          <select id="aiLighting">
+            <option value="top-left">Superior izquierda</option>
+            <option value="top-right">Superior derecha</option>
+            <option value="front">Frontal</option>
+            <option value="dramatic">Dramática</option>
+            <option value="flat">Plana / simple</option>
+          </select>
+        </label>
+
+        <label>Perspectiva
+          <select id="aiPerspective">
+            <option value="front">Frontal</option>
+            <option value="side">Lateral</option>
+            <option value="diagonal">Diagonal</option>
+            <option value="three-quarter">3/4</option>
+            <option value="top-down">Desde arriba</option>
+            <option value="isometric">Isométrica</option>
+          </select>
+        </label>
+
+        <label>Fondo
+          <select id="aiBackground">
+            <option value="transparent">Transparente</option>
+            <option value="white">Blanco</option>
+            <option value="solid">Color sólido</option>
+            <option value="scene">Escena simple</option>
+          </select>
+        </label>
+
+        <label>Contorno
+          <select id="aiOutline">
+            <option value="dark">Oscuro</option>
+            <option value="colored">Coloreado</option>
+            <option value="none">Sin contorno</option>
+            <option value="mixed">Mixto</option>
+          </select>
+        </label>
+
+        <label>Pasos del tutorial
+          <select id="aiSteps">
+            <option value="4">4 pasos</option>
+            <option value="6" selected>6 pasos</option>
+            <option value="8">8 pasos</option>
+            <option value="10">10 pasos</option>
+          </select>
+        </label>
+
+        <label class="ai-wide">Notas extra
+          <textarea id="aiNotes" rows="3" placeholder="Ej. que parezca usado, con una gema azul, sin demasiados colores..."></textarea>
+        </label>
+      </div>
+
+      <div class="ai-actions">
+        <button id="aiGenerateBtn" type="button">✨ Preparar especificación</button>
+        <button id="aiApplyBtn" type="button" disabled>Aplicar tamaño al editor</button>
+        <button id="aiCopyBtn" type="button" disabled>Copiar JSON</button>
+      </div>
+
+      <div class="ai-result">
+        <div class="panel-title-row">
+          <strong>Especificación para la futura IA</strong>
+          <span id="aiState">Esperando una idea…</span>
+        </div>
+        <pre id="aiOutput">Escribe un objeto y configura sus opciones.</pre>
+      </div>
+    </div>
+  </section>
+
   <footer>Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨</footer>
 
-  <script src="js/tutorials.js?v=0.3.2"></script>
-  <script src="js/canvas.js?v=0.3.2"></script>
-  <script src="js/app.js?v=0.3.2"></script>
+  <script src="js/tutorials.js?v=0.3.3"></script>
+  <script src="js/canvas.js?v=0.3.3"></script>
+  <script src="js/app.js?v=0.3.3"></script>
+  <script src="js/ai-prep.js?v=0.3.3"></script>
 </body>
 </html>
