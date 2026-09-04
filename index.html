@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Art Studios</title>
-  <link rel="stylesheet" href="css/styles.css?v=0.3.1">
+  <link rel="stylesheet" href="css/styles.css?v=0.3.2">
 </head>
 <body>
   <header class="topbar">
@@ -12,14 +12,14 @@
       <p class="eyebrow">PIXEL ART STUDIOS</p>
       <h1>Aprende dibujando, píxel por píxel.</h1>
     </div>
-    <span class="version">v0.3.1</span>
+    <span class="version">v0.3.2</span>
   </header>
 
   <main class="studio-layout">
     <section class="panel tools-panel">
       <div class="panel-title-row">
         <h2>Herramientas</h2>
-        <span class="mini-badge">v0.3.1</span>
+        <span class="mini-badge">v0.3.2</span>
       </div>
 
       <div class="tool-group">
@@ -47,6 +47,7 @@
         <button id="eyedropperBtn" type="button">💧 Cuentagotas</button>
         <button id="lineBtn" type="button">╱ Línea</button>
         <button id="rectBtn" type="button">▭ Rectángulo</button>
+        <button id="ellipseBtn" type="button">◯ Elipse</button>
       </div>
 
       <div class="history-actions">
@@ -55,6 +56,9 @@
       </div>
 
       <div class="utility-actions">
+        <button id="flipHBtn" type="button">↔ Voltear horizontal</button>
+        <button id="flipVBtn" type="button">↕ Voltear vertical</button>
+        <button id="rotateBtn" type="button">↻ Rotar 90°</button>
         <button id="gridBtn" class="active" type="button"># Cuadrícula</button>
         <button id="clearBtn" type="button">🗑️ Limpiar</button>
         <button id="exportBtn" type="button">💾 PNG</button>
@@ -75,7 +79,7 @@
       </div>
       <p id="actionStatus" class="action-status" aria-live="polite">Listo para dibujar.</p>
 
-      <p class="tool-tip">💡 Lápiz y borrador: mantén presionado y arrastra. Línea y rectángulo: presiona el inicio y suelta en el final.</p>
+      <p class="tool-tip">💡 Lápiz y borrador: arrastra. Línea, rectángulo y elipse: presiona un punto y suelta en el extremo opuesto.</p>
     </section>
 
     <section class="canvas-panel">
@@ -113,17 +117,11 @@
         <button class="format-tab" data-size="32" type="button">32×32</button>
       </div>
 
-      <div class="progress-wrap">
-        <div id="progressBar" class="progress-bar"></div>
-      </div>
-
+      <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
       <p id="stepCounter" class="step-counter">Paso 1</p>
 
       <div class="guide-card">
-        <div class="guide-heading">
-          <strong>Guía gráfica</strong>
-          <span>🟨 añade ahora</span>
-        </div>
+        <div class="guide-heading"><strong>Guía gráfica</strong><span>🟨 añade ahora</span></div>
         <div id="guideCanvas" class="guide-canvas" aria-label="Guía visual del paso actual"></div>
       </div>
 
@@ -131,10 +129,7 @@
 
       <div class="color-hint">
         <span id="stepColorSwatch" class="color-swatch"></span>
-        <div>
-          <small>Color recomendado</small>
-          <strong id="stepColorName">Rojo oscuro</strong>
-        </div>
+        <div><small>Color recomendado</small><strong id="stepColorName">Rojo oscuro</strong></div>
       </div>
 
       <div class="tutorial-actions">
@@ -144,12 +139,10 @@
     </aside>
   </main>
 
-  <footer>
-    Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨
-  </footer>
+  <footer>Menos píxeles = mejores decisiones. Más píxeles = más espacio para detalle. 🎨</footer>
 
-  <script src="js/tutorials.js?v=0.3.1"></script>
-  <script src="js/canvas.js?v=0.3.1"></script>
-  <script src="js/app.js?v=0.3.1"></script>
+  <script src="js/tutorials.js?v=0.3.2"></script>
+  <script src="js/canvas.js?v=0.3.2"></script>
+  <script src="js/app.js?v=0.3.2"></script>
 </body>
 </html>
