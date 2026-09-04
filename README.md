@@ -17,7 +17,7 @@ Crear un estudio de pixel art que permita:
 - Crear una biblioteca ampliable de tutoriales.
 - Usar lo aprendido posteriormente en videojuegos y otros proyectos.
 
-## 🧩 Versión actual — v0.3.1
+## 🧩 Versión actual — v0.3.2
 
 ### Formatos
 
@@ -31,10 +31,11 @@ Crear un estudio de pixel art que permita:
 
 - ✏️ Lápiz con dibujo continuo al arrastrar.
 - 🧽 Borrador con borrado continuo al arrastrar.
-- 🪣 Cubeta de relleno funcional.
-- 💧 Cuentagotas funcional, incluyendo el color blanco.
-- ╱ Herramienta de línea funcional entre punto inicial y final.
-- ▭ Herramienta de rectángulo funcional entre dos esquinas.
+- 🪣 Cubeta de relleno.
+- 💧 Cuentagotas.
+- ╱ Línea pixelada.
+- ▭ Rectángulo pixelado.
+- ◯ Elipse/círculo pixelado.
 - Selector de color.
 - Paleta rápida.
 - Visualización del código hexadecimal del color activo.
@@ -44,22 +45,25 @@ Crear un estudio de pixel art que permita:
 - ↶ Deshacer.
 - ↷ Rehacer.
 - Historial de hasta 60 estados.
+- ↔ Voltear todo el lienzo horizontalmente.
+- ↕ Voltear todo el lienzo verticalmente.
+- ↻ Rotar todo el lienzo 90°.
 - Mostrar u ocultar cuadrícula.
 - Zoom aproximado de 60% a 175%.
 - Contador de píxeles utilizados.
 - Coordenadas X/Y del cursor.
 - Limpiar lienzo.
 - Exportar el sprite como PNG en su resolución real.
-- Atajos de teclado para herramientas y Ctrl+Z / Ctrl+Y.
-- Mensajes visibles que confirman la herramienta o acción seleccionada.
+- Atajos de teclado.
+- Mensajes visibles que confirman herramientas y acciones.
 
 ### Tutorial gráfico
 
-La manzana es actualmente el objeto de práctica principal y tiene tres versiones diseñadas específicamente para cada formato:
+La manzana sigue siendo el objeto de práctica principal y tiene tres versiones diseñadas específicamente para cada formato:
 
-- **8×8:** silueta muy simple, pocos colores y detalles mínimos.
+- **8×8:** silueta simple, pocos colores y detalles mínimos.
 - **16×16:** contorno, relleno, luz, sombra, tallo y hoja.
-- **32×32:** curvas más suaves, tonos intermedios, iluminación más compleja, sombras más amplias y detalles secundarios.
+- **32×32:** curvas más suaves, tonos intermedios, iluminación más compleja, sombras amplias y detalles secundarios.
 
 El objetivo es demostrar que aumentar la resolución **no significa simplemente agrandar el mismo sprite**: cada tamaño requiere decisiones diferentes.
 
@@ -88,6 +92,7 @@ Pixel-Art-Studios/
 - `I` — cuentagotas.
 - `L` — línea.
 - `R` — rectángulo.
+- `O` — elipse.
 - `Ctrl + Z` — deshacer.
 - `Ctrl + Y` o `Ctrl + Shift + Z` — rehacer.
 
@@ -95,9 +100,9 @@ Pixel-Art-Studios/
 
 - Tamaños personalizados.
 - Capas.
-- Círculos y elipses pixeladas.
 - Selección y movimiento de áreas.
-- Copiar, pegar, voltear y rotar selecciones.
+- Copiar y pegar selecciones.
+- Transformar solamente una selección.
 - Paletas guardadas y paletas por estilo.
 - Fondo transparente.
 - Exportación ampliada sin suavizado.
@@ -107,7 +112,6 @@ Pixel-Art-Studios/
 - Estilos 8-bit, 16-bit, Game Boy, RPG, isométrico y moderno.
 - Desafíos de práctica.
 - Modo libre sin referencia visual.
-- Ocultar o mostrar la guía gráfica.
 - Superponer la guía sobre el lienzo del usuario.
 - Validar automáticamente si el paso fue dibujado correctamente.
 - Buscador de objetos para solicitar qué se quiere dibujar.
@@ -119,14 +123,6 @@ Pixel-Art-Studios/
 # 📓 Bitácora de desarrollo
 
 ## 31 de agosto de 2026 — Inicio del proyecto
-
-### Decisiones
-
-- Se creó el repositorio `Pixel-Art-Studios`.
-- Se decidió construir el proyecto como aplicación web.
-- El enfoque principal será **enseñar mediante instrucciones**, no solo mostrar sprites para copiar.
-- Los tutoriales se separarán de la lógica principal para poder añadir contenido fácilmente.
-- Se empezará con una versión pequeña pero funcional antes de agregar herramientas avanzadas.
 
 ### v0.1 — Base inicial
 
@@ -141,43 +137,40 @@ Pixel-Art-Studios/
 
 ### v0.2 — Tutoriales gráficos
 
-- [x] Añadir una cuadrícula visual para las instrucciones.
-- [x] Convertir los pasos del tutorial en datos con coordenadas de píxeles.
-- [x] Mostrar acumulativamente lo construido en pasos anteriores.
-- [x] Resaltar los píxeles que deben añadirse en el paso actual.
-- [x] Mostrar el color recomendado para cada paso.
-- [x] Hacer que el selector de color cambie automáticamente con el tutorial.
-- [x] Mantener explicación escrita junto a la explicación gráfica.
+- [x] Añadir cuadrícula visual para instrucciones.
+- [x] Convertir pasos en coordenadas de píxeles.
+- [x] Mostrar acumulativamente pasos anteriores.
+- [x] Resaltar píxeles del paso actual.
+- [x] Mostrar color recomendado.
 
 ### v0.2.1 — Pintura continua
 
-- [x] Permitir pintar varios píxeles manteniendo presionado y arrastrando.
-- [x] Permitir borrar varios píxeles manteniendo presionado y arrastrando.
-- [x] Corregir la captura del puntero que impedía recorrer correctamente las celdas.
-- [x] Evitar repintados innecesarios sobre el mismo píxel durante un arrastre.
+- [x] Pintar y borrar manteniendo presionado y arrastrando.
 
 ### v0.3 — Herramientas y formatos
 
 - [x] Añadir lienzos 8×8, 16×16 y 32×32.
-- [x] Crear una versión diferente de la manzana para cada resolución.
-- [x] Explicar las diferencias de detalle entre formatos.
-- [x] Hacer dinámica la cuadrícula gráfica del tutorial.
-- [x] Añadir interfaz para nuevas herramientas y utilidades.
+- [x] Crear una manzana distinta para cada resolución.
+- [x] Añadir interfaz de herramientas y utilidades.
 
 ### v0.3.1 — Corrección funcional
 
-- [x] Conectar y reforzar la lógica real de todas las herramientas de v0.3.
-- [x] Corregir línea y rectángulo para conservar el punto final durante el arrastre.
-- [x] Hacer funcional el cuentagotas incluso sobre píxeles blancos.
-- [x] Confirmar cubeta de relleno con historial.
-- [x] Confirmar deshacer y rehacer.
-- [x] Confirmar cambio entre 8×8, 16×16 y 32×32.
-- [x] Confirmar mostrar/ocultar cuadrícula.
-- [x] Confirmar zoom.
-- [x] Confirmar exportación PNG.
-- [x] Añadir mensajes de estado para saber qué herramienta está activa.
-- [x] Añadir versionado a CSS y JavaScript (`?v=0.3.1`) para evitar que GitHub Pages cargue archivos antiguos desde caché.
-- [ ] Añadir funciones nuevas solamente después de probar esta versión.
+- [x] Hacer funcionales lápiz, borrador, relleno, cuentagotas, línea y rectángulo.
+- [x] Confirmar historial, zoom, cuadrícula, formatos y exportación PNG.
+- [x] Añadir mensajes de estado.
+- [x] Evitar caché antigua mediante versionado de scripts.
+
+### v0.3.2 — Formas y transformaciones
+
+- [x] Añadir elipse/círculo pixelado.
+- [x] Añadir volteo horizontal del lienzo.
+- [x] Añadir volteo vertical del lienzo.
+- [x] Añadir rotación de 90°.
+- [x] Integrar las nuevas acciones con deshacer/rehacer.
+- [x] Añadir atajo `O` para la elipse.
+- [ ] Añadir selección de áreas.
+- [ ] Añadir fondo transparente.
+- [ ] Añadir biblioteca/buscador de objetos.
 
 ## 🛠️ Tecnologías
 
