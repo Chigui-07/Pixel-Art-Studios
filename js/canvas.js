@@ -48,9 +48,10 @@ window.PixelCanvas = (() => {
   function snapshot() { return getPixels().map(getPixelColor); }
 
   function restore(state) {
-    if (!state || state.length !== size * size) return;
+    if (!state || state.length !== size * size) return false;
     getPixels().forEach((pixel, index) => setPixelColor(pixel, state[index]));
     updateCounter();
+    return true;
   }
 
   function pushHistory() {
@@ -62,6 +63,12 @@ window.PixelCanvas = (() => {
     if (history.length > MAX_HISTORY) history.shift();
     historyIndex = history.length - 1;
     window.dispatchEvent(new CustomEvent("pixelhistorychange"));
+  }
+
+  function resetHistory() {
+    history = [];
+    historyIndex = -1;
+    pushHistory();
   }
 
   function undo() {
@@ -234,10 +241,9 @@ window.PixelCanvas = (() => {
       pixel.style.background = EMPTY;
       canvas.appendChild(pixel);
     }
-    history = [];
-    historyIndex = -1;
     updateCounter();
-    pushHistory();
+    resetHistory();
+    window.dispatchEvent(new CustomEvent("pixelsizechange", { detail: { size } }));
   }
 
   canvas.addEventListener("pointerdown", event => {
@@ -336,6 +342,20 @@ window.PixelCanvas = (() => {
 
   function resize(newSize) { buildGrid(newSize); }
 
+  function getState() {
+    return { size, pixels: snapshot() };
+  }
+
+  function loadState(state, options = {}) {
+    if (!state || !Array.isArray(state.pixels)) return false;
+    if (Number(state.size) !== size) buildGrid(Number(state.size));
+    if (state.pixels.length !== size * size) return false;
+    restore(state.pixels);
+    if (options.resetHistory !== false) resetHistory();
+    window.dispatchEvent(new CustomEvent("pixelstatechange"));
+    return true;
+  }
+
   function toggleGrid(force) {
     const show = typeof force === "boolean" ? force : canvas.classList.contains("grid-hidden");
     canvas.classList.toggle("grid-hidden", !show);
@@ -343,7 +363,7 @@ window.PixelCanvas = (() => {
   }
 
   function setZoom(nextZoom) {
-    zoom = Math.min(1.75, Math.max(0.6, Number(nextZoom)));
+    zoom = Math.min(2.5, Math.max(0.35, Number(nextZoom)));
     canvas.style.width = `${Math.round(640 * zoom)}px`;
     return zoom;
   }
@@ -375,6 +395,6 @@ window.PixelCanvas = (() => {
   return {
     setTool, setColor, getColor, clear, resize, undo, redo, canUndo, canRedo,
     toggleGrid, setZoom, getZoom, exportPNG, flipHorizontal, flipVertical, rotate90,
-    getSize: () => size
+    getState, loadState, getSize: () => size
   };
 })();
