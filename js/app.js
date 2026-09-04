@@ -2,14 +2,15 @@ const toolGridElement = document.querySelector(".tool-buttons.tool-grid");
 const handBtn = document.createElement("button");
 handBtn.id = "handBtn";
 handBtn.type = "button";
-handBtn.textContent = "🖐️ Mano";
+handBtn.textContent = "🖐️ Mover dibujo";
 toolGridElement?.appendChild(handBtn);
 
 const handStyle = document.createElement("style");
 handStyle.textContent = `
-  .canvas-viewport.hand-mode { cursor: grab; }
-  .canvas-viewport.hand-mode.dragging { cursor: grabbing; }
-  .canvas-viewport.hand-mode .pixel-canvas { cursor: inherit; }
+  .pixel-canvas.move-art-mode { cursor: move; }
+  .canvas-viewport.pan-mode { cursor: grab; }
+  .canvas-viewport.pan-mode.dragging { cursor: grabbing; }
+  .canvas-viewport.pan-mode .pixel-canvas { cursor: inherit; }
 `;
 document.head.appendChild(handStyle);
 
@@ -26,7 +27,7 @@ const toolButtons = {
 
 const toolNames = {
   pencil: "Lápiz", eraser: "Borrador", fill: "Relleno", eyedropper: "Cuentagotas",
-  line: "Línea", rect: "Rectángulo", ellipse: "Elipse", hand: "Mano"
+  line: "Línea", rect: "Rectángulo", ellipse: "Elipse", hand: "Mover dibujo"
 };
 
 const toolMessages = {
@@ -37,7 +38,7 @@ const toolMessages = {
   line: "Línea activa: presiona el inicio y suelta en el final.",
   rect: "Rectángulo activo: presiona una esquina y suelta en la opuesta.",
   ellipse: "Elipse activa: presiona una esquina del área y suelta en la opuesta.",
-  hand: "Mano activa: arrastra para desplazarte sin pintar."
+  hand: "Mover dibujo: arrastra para desplazar todos los píxeles dentro del lienzo."
 };
 
 const clearBtn = document.getElementById("clearBtn");
@@ -73,6 +74,7 @@ const stepColorSwatch = document.getElementById("stepColorSwatch");
 const stepColorName = document.getElementById("stepColorName");
 const formatTabs = [...document.querySelectorAll(".format-tab")];
 const canvasViewport = document.getElementById("canvasViewport");
+const pixelCanvas = document.getElementById("pixelCanvas");
 
 const paletteColors = [
   "#74232a", "#8f2d2d", "#d13b46", "#d94343", "#e94f55", "#ff7468",
@@ -85,7 +87,7 @@ let currentStep = 0;
 let gridVisible = true;
 let statusTimer = null;
 let activeTool = "pencil";
-let temporaryHand = false;
+let temporaryPan = false;
 let panning = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -99,9 +101,7 @@ function showStatus(message) {
   statusTimer = setTimeout(() => actionStatus.classList.remove("visible"), 2200);
 }
 
-function currentTutorial() {
-  return window.PixelTutorials.apple[currentSize] || null;
-}
+function currentTutorial() { return window.PixelTutorials.apple[currentSize] || null; }
 
 function setColor(color, announce = false) {
   const normalized = color.toLowerCase();
@@ -132,27 +132,23 @@ function buildPalette() {
   });
 }
 
-function refreshHandCursor() {
-  const handMode = activeTool === "hand" || temporaryHand;
-  canvasViewport?.classList.toggle("hand-mode", handMode);
-  if (!handMode) canvasViewport?.classList.remove("dragging");
+function refreshCursors() {
+  pixelCanvas?.classList.toggle("move-art-mode", activeTool === "hand" && !temporaryPan);
+  canvasViewport?.classList.toggle("pan-mode", temporaryPan);
+  if (!temporaryPan) canvasViewport?.classList.remove("dragging");
 }
 
 function setActiveTool(tool) {
   activeTool = tool;
   Object.entries(toolButtons).forEach(([name, button]) => button.classList.toggle("active", name === tool));
   toolStatus.textContent = toolNames[tool];
-  window.PixelCanvas.setTool(tool);
-  refreshHandCursor();
+  window.PixelCanvas.setTool(tool === "hand" ? "move" : tool);
+  refreshCursors();
   showStatus(toolMessages[tool]);
 }
 
-function isHandMode() {
-  return activeTool === "hand" || temporaryHand;
-}
-
 function startPan(event) {
-  if (!isHandMode() || !canvasViewport) return;
+  if (!temporaryPan || !canvasViewport) return;
   panning = true;
   panStartX = event.clientX;
   panStartY = event.clientY;
@@ -286,18 +282,10 @@ gridBtn.addEventListener("click", () => {
   showStatus(gridVisible ? "Cuadrícula visible." : "Cuadrícula oculta.");
 });
 
-zoomInBtn.addEventListener("click", () => {
-  window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() + 0.15);
-  updateZoomLabel();
-});
-zoomOutBtn.addEventListener("click", () => {
-  window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() - 0.15);
-  updateZoomLabel();
-});
+zoomInBtn.addEventListener("click", () => { window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() + 0.15); updateZoomLabel(); });
+zoomOutBtn.addEventListener("click", () => { window.PixelCanvas.setZoom(window.PixelCanvas.getZoom() - 0.15); updateZoomLabel(); });
 
-prevStep.addEventListener("click", () => {
-  if (currentStep > 0) { currentStep--; renderTutorial(); }
-});
+prevStep.addEventListener("click", () => { if (currentStep > 0) { currentStep--; renderTutorial(); } });
 nextStep.addEventListener("click", () => {
   const tutorial = currentTutorial();
   if (!tutorial) return;
@@ -314,8 +302,8 @@ document.addEventListener("keydown", event => {
 
   if (event.code === "Space" && !event.repeat) {
     event.preventDefault();
-    temporaryHand = true;
-    refreshHandCursor();
+    temporaryPan = true;
+    refreshCursors();
     return;
   }
 
@@ -336,15 +324,15 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => {
   if (event.code !== "Space") return;
-  temporaryHand = false;
+  temporaryPan = false;
   stopPan();
-  refreshHandCursor();
+  refreshCursors();
 });
 
 window.addEventListener("blur", () => {
-  temporaryHand = false;
+  temporaryPan = false;
   stopPan();
-  refreshHandCursor();
+  refreshCursors();
 });
 
 buildPalette();
