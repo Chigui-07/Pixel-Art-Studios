@@ -28,8 +28,16 @@
   function loadLayersModule() {
     if (window.PixelLayers || document.querySelector('script[data-pixel-layers]')) return;
     const script = document.createElement("script");
-    script.src = "js/layers.js?v=0.9";
+    script.src = "js/layers.js?v=0.9.1";
     script.dataset.pixelLayers = "true";
+    document.body.appendChild(script);
+  }
+
+  function loadShapePreviewModule() {
+    if (window.PixelShapePreview || document.querySelector('script[data-shape-preview]')) return;
+    const script = document.createElement("script");
+    script.src = "js/shape-preview.js?v=0.9.1";
+    script.dataset.shapePreview = "true";
     document.body.appendChild(script);
   }
 
@@ -82,6 +90,7 @@
   loadWorkspaceModule();
   loadEditorPatches();
   loadLayersModule();
+  loadShapePreviewModule();
   loadAnimationLayerBridge();
   if (!generateBtn) return;
 
