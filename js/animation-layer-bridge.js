@@ -6,9 +6,23 @@
 
   window.PixelAnimation.loadProjectState = function(data, options = {}) {
     if (!options.preserveCanvas) return originalLoadProjectState(data);
+
     const backup = window.PixelCanvas.getLayerState();
-    const result = originalLoadProjectState(data);
-    window.PixelCanvas.loadLayerState(backup, { resetHistory: true });
+    const originalDispatch = window.dispatchEvent.bind(window);
+    let result = false;
+
+    window.dispatchEvent = function(event) {
+      if (event?.type === 'pixelsizechange') return true;
+      return originalDispatch(event);
+    };
+
+    try {
+      result = originalLoadProjectState(data);
+      window.PixelCanvas.loadLayerState(backup, { resetHistory: true });
+    } finally {
+      window.dispatchEvent = originalDispatch;
+    }
+
     return result;
   };
 
