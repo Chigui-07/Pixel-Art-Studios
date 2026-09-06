@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tutorial Studio · Pixel Art Studios</title>
+  <link rel="stylesheet" href="css/styles.css?v=0.7">
+  <style>
+    body { min-height:100vh; }
+    .ai-studio-shell { width:min(1180px,100%); margin:0 auto; padding:2rem; }
+    .ai-studio-head { display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:1rem; }
+    .ai-studio-head h1 { margin:.3rem 0 0; }
+    .ai-studio-grid { display:grid; grid-template-columns:minmax(300px,390px) minmax(0,1fr); gap:1rem; align-items:start; }
+    .ai-form, .ai-tutorial { border:1px solid var(--border); background:var(--panel); padding:1.2rem; }
+    .ai-form label { display:grid; gap:.4rem; margin-bottom:.85rem; color:var(--muted); font-size:.82rem; }
+    .ai-form input, .ai-form select, .ai-form textarea { width:100%; padding:.75rem; border:1px solid var(--border); background:var(--panel-2); color:var(--text); }
+    .ai-form textarea { resize:vertical; min-height:110px; }
+    .ai-actions { display:flex; flex-wrap:wrap; gap:.55rem; }
+    .ai-result-empty { min-height:420px; display:grid; place-items:center; text-align:center; color:var(--muted); border:1px dashed var(--border); padding:2rem; }
+    .tutorial-head { display:flex; justify-content:space-between; gap:1rem; align-items:start; }
+    .tutorial-meta { color:var(--muted); }
+    .palette-preview { display:flex; flex-wrap:wrap; gap:.45rem; margin:1rem 0; }
+    .palette-chip { display:flex; gap:.45rem; align-items:center; border:1px solid var(--border); padding:.45rem .6rem; }
+    .palette-chip span { width:18px; height:18px; border:1px solid #000; }
+    .step-card { margin-top:1rem; border:1px solid var(--border); background:#18181f; padding:1rem; }
+    .step-card h3 { margin:.15rem 0 .5rem; }
+    .step-card p { color:var(--muted); line-height:1.55; }
+    .step-guide { display:grid; grid-template-columns:repeat(8,1fr); width:min(320px,100%); aspect-ratio:1; margin:1rem auto 0; border:3px solid #0f0f14; background:#fff; image-rendering:pixelated; }
+    .step-guide span { border-right:1px solid #ddd; border-bottom:1px solid #ddd; }
+    .step-guide span.active { background:#f2b84b; }
+    .step-nav { display:flex; justify-content:space-between; gap:.6rem; margin-top:1rem; }
+    .notice { margin-top:1rem; color:var(--muted); font-size:.8rem; line-height:1.5; }
+    @media(max-width:850px){ .ai-studio-grid{grid-template-columns:1fr;} .ai-studio-shell{padding:1rem;} }
+  </style>
+</head>
+<body>
+  <main class="ai-studio-shell">
+    <div class="ai-studio-head">
+      <div>
+        <p class="eyebrow">PIXEL ART STUDIOS · IA</p>
+        <h1>AI Tutorial Studio</h1>
+      </div>
+      <button id="closeStudioBtn" type="button">← Volver al editor</button>
+    </div>
+
+    <div class="ai-studio-grid">
+      <section class="ai-form">
+        <h2>¿Qué quieres crear?</h2>
+        <p class="ai-intro">Describe el asset y el estudio preparará un tutorial de pixel art. Esta primera versión todavía usa reglas locales; más adelante aquí conectaremos la IA real.</p>
+
+        <label>Descripción
+          <textarea id="tutorialPrompt" placeholder="Ej. cama de madera acogedora para la habitación de Nicolás"></textarea>
+        </label>
+
+        <label>Tipo
+          <select id="tutorialType">
+            <option value="object">Objeto</option>
+            <option value="character">Personaje</option>
+            <option value="animation">Animación</option>
+            <option value="tile">Tile / tileset</option>
+            <option value="scene">Escena</option>
+            <option value="effect">Efecto</option>
+          </select>
+        </label>
+
+        <label>Tamaño
+          <select id="tutorialSize">
+            <option value="16">16×16</option>
+            <option value="24">24×24</option>
+            <option value="32" selected>32×32</option>
+            <option value="48">48×48</option>
+            <option value="64">64×64</option>
+          </select>
+        </label>
+
+        <label>Estilo
+          <select id="tutorialStyle">
+            <option value="rumbo" selected>RUMBO</option>
+            <option value="classic">Pixel art clásico</option>
+            <option value="rpg">RPG</option>
+            <option value="8-bit">8-bit</option>
+            <option value="16-bit">16-bit</option>
+          </select>
+        </label>
+
+        <label>Notas
+          <input id="tutorialNotes" type="text" placeholder="Ej. vista frontal, madera clara, sin fondo">
+        </label>
+
+        <div class="ai-actions">
+          <button id="generateTutorialBtn" type="button">✨ Crear tutorial</button>
+          <button id="copyTutorialBtn" type="button" disabled>Copiar estructura</button>
+        </div>
+
+        <p class="notice">La meta de esta página es generar <strong>pasos, colores y coordenadas</strong>, no imágenes. Así el resultado seguirá siendo editable dentro de Pixel Art Studios.</p>
+      </section>
+
+      <section class="ai-tutorial" id="tutorialOutput">
+        <div class="ai-result-empty">
+          <div>
+            <div style="font-size:2.5rem">🤖🎨</div>
+            <h2>Tu tutorial aparecerá aquí</h2>
+            <p>Describe un asset y pulsa “Crear tutorial”.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const prompt = document.getElementById('tutorialPrompt');
+      const type = document.getElementById('tutorialType');
+      const size = document.getElementById('tutorialSize');
+      const style = document.getElementById('tutorialStyle');
+      const notes = document.getElementById('tutorialNotes');
+      const output = document.getElementById('tutorialOutput');
+      const copyBtn = document.getElementById('copyTutorialBtn');
+      let latest = null;
+      let stepIndex = 0;
+
+      const palettes = {
+        object: ['#2b2526','#6f4430','#a86a43','#d3a067','#eee0c2'],
+        character: ['#29252d','#71483a','#c78364','#e9b28b','#e9e2d0'],
+        animation: ['#29252d','#70452d','#b76e49','#e5b07b','#f2d5ad'],
+        tile: ['#243127','#41573c','#6d824f','#a3a86b','#d4c995'],
+        scene: ['#232737','#3f4d64','#727f92','#b5b1a7','#e7d8b8'],
+        effect: ['#2d273d','#694f8c','#b283d1','#e0b3ef','#fff0b5']
+      };
+
+      const stepNames = {
+        object: ['Silueta','Volumen principal','Color base','Sombras','Luces','Detalles'],
+        character: ['Proporciones','Silueta','Colores base','Rostro y ropa','Sombras y luces','Detalles finales'],
+        animation: ['Pose inicial','Movimiento clave','Pose intermedia','Segundo extremo','Pulido','Revisión en bucle'],
+        tile: ['Forma repetible','Bordes','Color base','Variación','Sombras','Prueba de repetición'],
+        scene: ['Composición','Bloques grandes','Objetos principales','Profundidad','Iluminación','Detalles'],
+        effect: ['Forma inicial','Dirección','Volumen','Variación','Brillo/sombra','Frame final']
+      };
+
+      function guidePattern(step) {
+        const active = new Set();
+        const radius = 1 + step;
+        for (let y = 0; y < 8; y++) {
+          for (let x = 0; x < 8; x++) {
+            const d = Math.abs(x - 3.5) + Math.abs(y - 3.5);
+            if (d <= radius * .8 && ((x + y + step) % 2 === 0 || step > 3)) active.add(`${x},${y}`);
+          }
+        }
+        return active;
+      }
+
+      function buildTutorial() {
+        const subject = prompt.value.trim() || 'asset sin nombre';
+        const kind = type.value;
+        const names = stepNames[kind];
+        return {
+          version: 'pixel-art-tutorial-draft-v1',
+          subject,
+          type: kind,
+          size: Number(size.value),
+          style: style.value,
+          notes: notes.value.trim(),
+          palette: palettes[kind],
+          steps: names.map((name, index) => ({
+            title: name,
+            instruction: index === 0 ? 'Empieza por las formas grandes. No añadas detalles todavía.' : index === names.length - 1 ? 'Revisa píxeles aislados, bordes y contraste. Elimina todo detalle que no ayude a leer la forma.' : `Construye ${name.toLowerCase()} manteniendo la silueta fácil de leer y usando pocos colores.`
+          }))
+        };
+      }
+
+      function renderStep() {
+        if (!latest) return;
+        const current = latest.steps[stepIndex];
+        const pattern = guidePattern(stepIndex);
+        output.innerHTML = `
+          <div class="tutorial-head">
+            <div><p class="eyebrow">TUTORIAL LOCAL</p><h2>${latest.subject}</h2><p class="tutorial-meta">${latest.size}×${latest.size} · ${latest.style.toUpperCase()} · ${latest.type}</p></div>
+            <span class="mini-badge">Paso ${stepIndex + 1}/${latest.steps.length}</span>
+          </div>
+          <div class="palette-preview">${latest.palette.map(color => `<span class="palette-chip"><span style="background:${color}"></span>${color}</span>`).join('')}</div>
+          <div class="step-card">
+            <p class="eyebrow">PASO ${stepIndex + 1}</p>
+            <h3>${current.title}</h3>
+            <p>${current.instruction}</p>
+            ${latest.notes ? `<p><strong>Notas:</strong> ${latest.notes}</p>` : ''}
+            <div class="step-guide">${Array.from({length:64},(_,i)=>{const x=i%8,y=Math.floor(i/8);return `<span class="${pattern.has(`${x},${y}`)?'active':''}"></span>`}).join('')}</div>
+          </div>
+          <div class="step-nav">
+            <button id="prevTutorialStep" type="button" ${stepIndex===0?'disabled':''}>← Anterior</button>
+            <button id="nextTutorialStep" type="button" ${stepIndex===latest.steps.length-1?'disabled':''}>Siguiente →</button>
+          </div>
+          <p class="notice">La cuadrícula de esta versión es una guía conceptual local. Cuando conectemos la IA real, aquí llegarán las coordenadas exactas de cada paso.</p>`;
+        document.getElementById('prevTutorialStep')?.addEventListener('click',()=>{ if(stepIndex>0){stepIndex--;renderStep();} });
+        document.getElementById('nextTutorialStep')?.addEventListener('click',()=>{ if(stepIndex<latest.steps.length-1){stepIndex++;renderStep();} });
+      }
+
+      document.getElementById('generateTutorialBtn').addEventListener('click', () => {
+        latest = buildTutorial();
+        stepIndex = 0;
+        copyBtn.disabled = false;
+        renderStep();
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        if (!latest) return;
+        try { await navigator.clipboard.writeText(JSON.stringify(latest,null,2)); copyBtn.textContent = 'Copiado ✓'; }
+        catch (_) { copyBtn.textContent = 'No se pudo copiar'; }
+      });
+
+      document.getElementById('closeStudioBtn').addEventListener('click', () => {
+        if (window.opener) window.close();
+        else history.back();
+      });
+    })();
+  </script>
+</body>
+</html>
