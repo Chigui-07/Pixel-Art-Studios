@@ -34,6 +34,7 @@
     .workspace-nav button { padding:.55rem .75rem; }
     .workspace-save-status { color:var(--muted); font-size:.76rem; }
     .workspace-modal-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:1rem; background:rgba(0,0,0,.72); }
+    .workspace-modal-backdrop[hidden] { display:none !important; }
     .workspace-modal { width:min(520px,100%); border:1px solid var(--border); background:var(--panel); padding:1.35rem; }
     .workspace-modal h3 { margin:.3rem 0 .6rem; }
     .workspace-modal p { color:var(--muted); line-height:1.5; }
