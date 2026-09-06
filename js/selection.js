@@ -27,6 +27,7 @@ window.PixelSelection = (() => {
     .pixel-canvas.selection-moving { cursor:move; }
     .selection-actions { display:grid; gap:.5rem; margin-top:1rem; }
     .selection-actions .selection-row { display:grid; grid-template-columns:repeat(3,1fr); gap:.45rem; }
+    .selection-actions .selection-clear { width:100%; }
     .selection-hint { color:var(--muted); font-size:.75rem; line-height:1.45; margin:.55rem 0 0; }
   `;
   document.head.appendChild(style);
@@ -110,6 +111,19 @@ window.PixelSelection = (() => {
     active = false;
     selecting = moving = false;
     canvas.classList.remove('selection-mode','selection-moving');
+  }
+
+  function deselect() {
+    selection = null;
+    start = null;
+    selecting = false;
+    moving = false;
+    moveOrigin = null;
+    moveStart = null;
+    clearVisual();
+    canvas.classList.remove('selection-moving');
+    showStatus('Selección quitada.');
+    return true;
   }
 
   function selectedData() {
@@ -258,7 +272,7 @@ window.PixelSelection = (() => {
     if ((event.ctrlKey||event.metaKey) && key==='x' && active) { event.preventDefault(); cut(); return; }
     if ((event.ctrlKey||event.metaKey) && key==='v' && active) { event.preventDefault(); paste(); return; }
     if ((event.key==='Delete'||event.key==='Backspace') && active && selection) { event.preventDefault(); deleteSelection(); }
-    if (event.key==='Escape' && active) { selection=null; renderSelection(); }
+    if (event.key==='Escape' && active) { event.preventDefault(); deselect(); }
   });
 
   window.addEventListener('pixelsizechange',()=>{ selection=null; clearVisual(); });
@@ -270,15 +284,16 @@ window.PixelSelection = (() => {
     const block=document.createElement('div');
     block.id='selectionActions';
     block.className='selection-actions';
-    block.innerHTML=`<p class="eyebrow">SELECCIÓN</p><div class="selection-row"><button type="button">Copiar</button><button type="button">Cortar</button><button type="button">Pegar</button></div><p class="selection-hint">S seleccionar · Ctrl+C copiar · Ctrl+X cortar · Ctrl+V pegar · Supr eliminar · arrastra dentro para mover.</p>`;
+    block.innerHTML=`<p class="eyebrow">SELECCIÓN</p><div class="selection-row"><button type="button">Copiar</button><button type="button">Cortar</button><button type="button">Pegar</button></div><button type="button" class="selection-clear">✕ Quitar selección</button><p class="selection-hint">S seleccionar · Ctrl+C copiar · Ctrl+X cortar · Ctrl+V pegar · Supr eliminar · Esc quitar selección · arrastra dentro para mover.</p>`;
     const buttons=block.querySelectorAll('button');
     buttons[0].addEventListener('click',copy);
     buttons[1].addEventListener('click',cut);
     buttons[2].addEventListener('click',paste);
+    buttons[3].addEventListener('click',deselect);
     inspector.appendChild(block);
   }
   installActions();
   setTimeout(installActions,0);
 
-  return { activate, copy, cut, paste, deleteSelection, getSelection:()=>selection?{...selection}:null };
+  return { activate, deselect, copy, cut, paste, deleteSelection, getSelection:()=>selection?{...selection}:null };
 })();
