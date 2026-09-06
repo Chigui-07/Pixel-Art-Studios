@@ -33,8 +33,17 @@
     document.body.appendChild(script);
   }
 
+  function loadEditorPatches() {
+    if (document.querySelector('script[data-editor-patches]')) return;
+    const script = document.createElement("script");
+    script.src = "js/editor-patches.js?v=0.7.1";
+    script.dataset.editorPatches = "true";
+    document.body.appendChild(script);
+  }
+
   loadProjectModule();
   loadWorkspaceModule();
+  loadEditorPatches();
   if (!generateBtn) return;
 
   let latestSpec = null;
