@@ -1,75 +1,29 @@
 window.PixelProject = (() => {
-  const STORAGE_KEY = "pixel-art-studios-project-v1";
-  let projectName = "RUMBO Asset";
+  const STORAGE_KEY = "pixel-art-studios-projects-v2";
+  const ACTIVE_KEY = "pixel-art-studios-active-project-v2";
+  let currentProjectId = localStorage.getItem(ACTIVE_KEY) || null;
+  let currentProjectName = null;
 
-  function installStyles() {
-    if (document.getElementById("projectStyles")) return;
-    const style = document.createElement("style");
-    style.id = "projectStyles";
-    style.textContent = `
-      .project-wrap { width:min(1550px,100%); margin:0 auto; padding:0 2rem 2rem; }
-      .project-controls { display:flex; flex-wrap:wrap; gap:.6rem; align-items:end; }
-      .project-controls label { display:grid; gap:.3rem; color:var(--muted); font-size:.8rem; min-width:220px; flex:1 1 260px; }
-      .project-controls input[type="text"] { width:100%; padding:.72rem; border:1px solid var(--border); background:var(--panel-2); color:var(--text); }
-      .project-status { margin:.8rem 0 0; color:var(--muted); font-size:.8rem; }
-      @media (max-width:780px){ .project-wrap{padding:0 1rem 1rem;} }
-    `;
-    document.head.appendChild(style);
+  function uid() {
+    return `px-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  function installUI() {
-    if (document.getElementById("projectPanel")) return;
-    const animationWrap = document.querySelector(".workspace-wrap");
-    if (!animationWrap) return;
-
-    const wrap = document.createElement("section");
-    wrap.className = "project-wrap";
-    wrap.id = "projectPanel";
-    wrap.innerHTML = `
-      <div class="panel">
-        <div class="panel-title-row">
-          <div>
-            <p class="eyebrow">PROYECTO</p>
-            <h2>Guardar trabajo</h2>
-          </div>
-          <span class="mini-badge">producción</span>
-        </div>
-        <p class="ai-intro">Guarda el lienzo, todos los frames y sus duraciones. Para assets importantes de RUMBO usa también “Exportar proyecto” para tener un archivo de respaldo.</p>
-        <div class="project-controls">
-          <label>Nombre del proyecto
-            <input id="projectNameInput" type="text" value="RUMBO Asset" maxlength="80">
-          </label>
-          <button id="saveBrowserBtn" type="button">💾 Guardar en navegador</button>
-          <button id="loadBrowserBtn" type="button">↥ Cargar guardado</button>
-          <button id="exportProjectBtn" type="button">⬇ Exportar proyecto</button>
-          <button id="importProjectBtn" type="button">⬆ Importar proyecto</button>
-          <input id="projectFileInput" type="file" accept=".json,.pixelstudio.json,application/json" hidden>
-        </div>
-        <p id="projectStatus" class="project-status">Sin cambios guardados en esta sesión.</p>
-      </div>
-    `;
-    animationWrap.parentNode.insertBefore(wrap, animationWrap);
-
-    const nameInput = document.getElementById("projectNameInput");
-    nameInput?.addEventListener("input", () => { projectName = nameInput.value.trim() || "RUMBO Asset"; });
-    document.getElementById("saveBrowserBtn")?.addEventListener("click", saveToBrowser);
-    document.getElementById("loadBrowserBtn")?.addEventListener("click", loadFromBrowser);
-    document.getElementById("exportProjectBtn")?.addEventListener("click", exportProject);
-    document.getElementById("importProjectBtn")?.addEventListener("click", () => document.getElementById("projectFileInput")?.click());
-    document.getElementById("projectFileInput")?.addEventListener("change", importProjectFile);
+  function readStore() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+    catch (_) { return {}; }
   }
 
-  function status(message) {
-    const el = document.getElementById("projectStatus");
-    if (el) el.textContent = message;
+  function writeStore(store) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   }
 
-  function buildProject() {
+  function buildProject(name = currentProjectName || "Proyecto sin nombre") {
     const animation = window.PixelAnimation?.getProjectState?.();
     return {
       format: "pixel-art-studios-project-v1",
-      appVersion: "0.5",
-      name: projectName,
+      appVersion: "0.6-redesign",
+      id: currentProjectId,
+      name,
       savedAt: new Date().toISOString(),
       canvas: window.PixelCanvas.getState(),
       animation: animation || null
@@ -78,15 +32,15 @@ window.PixelProject = (() => {
 
   function validateProject(data) {
     if (!data || data.format !== "pixel-art-studios-project-v1") throw new Error("Formato de proyecto no reconocido.");
-    if (!data.canvas || !Array.isArray(data.canvas.pixels) || !Number(data.canvas.size)) throw new Error("El proyecto no contiene un lienzo válido.");
+    if (!data.canvas || !Array.isArray(data.canvas.pixels) || !Number(data.canvas.size)) throw new Error("Proyecto inválido.");
     return data;
   }
 
   function applyProject(data) {
     validateProject(data);
-    projectName = data.name || "RUMBO Asset";
-    const nameInput = document.getElementById("projectNameInput");
-    if (nameInput) nameInput.value = projectName;
+    currentProjectId = data.id || uid();
+    currentProjectName = data.name || "Proyecto";
+    localStorage.setItem(ACTIVE_KEY, currentProjectId);
 
     if (data.animation?.frames?.length && window.PixelAnimation?.loadProjectState) {
       window.PixelAnimation.loadProjectState(data.animation);
@@ -98,68 +52,99 @@ window.PixelProject = (() => {
     const sizeLabel = document.getElementById("canvasSizeLabel");
     if (sizeSelect) sizeSelect.value = String(data.canvas.size);
     if (sizeLabel) sizeLabel.textContent = `${data.canvas.size} × ${data.canvas.size}`;
-    status(`Proyecto cargado: ${projectName}`);
     window.dispatchEvent(new CustomEvent("pixelprojectloaded", { detail: data }));
+    window.dispatchEvent(new CustomEvent("pixelprojectchange", { detail: getCurrentInfo() }));
   }
 
-  function saveToBrowser() {
-    try {
-      const project = buildProject();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
-      status(`Guardado en este navegador · ${new Date().toLocaleTimeString()}`);
-    } catch (error) {
-      status(`No se pudo guardar: ${error.message}`);
-    }
+  function saveNamed(name) {
+    const clean = String(name || "").trim();
+    if (!clean) return false;
+    if (!currentProjectId) currentProjectId = uid();
+    currentProjectName = clean;
+    const store = readStore();
+    const project = buildProject(clean);
+    project.id = currentProjectId;
+    store[currentProjectId] = project;
+    writeStore(store);
+    localStorage.setItem(ACTIVE_KEY, currentProjectId);
+    window.dispatchEvent(new CustomEvent("pixelprojectsaved", { detail: project }));
+    window.dispatchEvent(new CustomEvent("pixelprojectchange", { detail: getCurrentInfo() }));
+    return true;
   }
 
-  function loadFromBrowser() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return status("Todavía no hay un proyecto guardado en este navegador.");
-      applyProject(JSON.parse(raw));
-    } catch (error) {
-      status(`No se pudo cargar: ${error.message}`);
-    }
+  function saveCurrent() {
+    if (!currentProjectId || !currentProjectName) return false;
+    return saveNamed(currentProjectName);
   }
 
-  function safeFileName(name) {
-    return (name || "pixel-project").trim().replace(/[^a-z0-9áéíóúüñ_-]+/gi, "-").replace(/^-+|-+$/g, "") || "pixel-project";
+  function newProject() {
+    currentProjectId = null;
+    currentProjectName = null;
+    localStorage.removeItem(ACTIVE_KEY);
+    window.dispatchEvent(new CustomEvent("pixelprojectchange", { detail: getCurrentInfo() }));
   }
 
-  function exportProject() {
-    try {
-      const project = buildProject();
-      const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${safeFileName(project.name)}.pixelstudio.json`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      status("Proyecto exportado como archivo de respaldo.");
-    } catch (error) {
-      status(`No se pudo exportar: ${error.message}`);
-    }
+  function getProjects() {
+    return Object.values(readStore()).sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
   }
 
-  async function importProjectFile(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const data = JSON.parse(await file.text());
-      applyProject(data);
-      status(`Importado: ${file.name}`);
-    } catch (error) {
-      status(`Archivo inválido: ${error.message}`);
-    } finally {
-      event.target.value = "";
-    }
+  function loadProjectById(id) {
+    const project = readStore()[id];
+    if (!project) return false;
+    applyProject(project);
+    return true;
   }
 
-  installStyles();
-  installUI();
+  function deleteProject(id) {
+    const store = readStore();
+    if (!store[id]) return false;
+    delete store[id];
+    writeStore(store);
+    if (currentProjectId === id) newProject();
+    return true;
+  }
 
-  return { buildProject, applyProject, saveToBrowser, loadFromBrowser, exportProject };
+  function exportCurrent() {
+    if (!currentProjectName) return false;
+    const project = buildProject(currentProjectName);
+    project.id = currentProjectId;
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${currentProjectName.replace(/[^a-z0-9áéíóúüñ_-]+/gi, "-")}.pixelstudio.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    return true;
+  }
+
+  async function importFile(file) {
+    const data = validateProject(JSON.parse(await file.text()));
+    data.id = uid();
+    currentProjectId = data.id;
+    currentProjectName = data.name || file.name.replace(/\.pixelstudio\.json$|\.json$/i, "");
+    data.name = currentProjectName;
+    const store = readStore();
+    store[data.id] = data;
+    writeStore(store);
+    applyProject(data);
+    return data;
+  }
+
+  function getCurrentInfo() {
+    return { id: currentProjectId, name: currentProjectName, named: Boolean(currentProjectId && currentProjectName) };
+  }
+
+  if (currentProjectId) {
+    const stored = readStore()[currentProjectId];
+    if (stored) currentProjectName = stored.name || null;
+    else newProject();
+  }
+
+  return {
+    buildProject, applyProject, saveNamed, saveCurrent, newProject,
+    getProjects, loadProjectById, deleteProject, exportCurrent, importFile, getCurrentInfo
+  };
 })();
