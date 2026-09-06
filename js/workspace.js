@@ -3,6 +3,9 @@
   const animationWrap = document.querySelector('.workspace-wrap');
   const aiWrap = document.querySelector('.ai-lab-wrap');
   const header = document.querySelector('.topbar');
+  const toolsPanel = document.querySelector('.tools-panel');
+  const canvasPanel = document.querySelector('.canvas-panel');
+  const tutorialPanel = document.querySelector('.tutorial-panel');
   if (!mainStudio || document.getElementById('workspaceHome')) return;
 
   const style = document.createElement('style');
@@ -11,12 +14,21 @@
     body.workspace-mode-home .studio-layout,
     body.workspace-mode-home .workspace-wrap,
     body.workspace-mode-home .ai-lab-wrap,
-    body.workspace-mode-home .project-wrap { display:none !important; }
+    body.workspace-mode-home .project-wrap,
+    body.workspace-mode-home .editor-commandbar { display:none !important; }
+
     body.workspace-mode-library .studio-layout,
     body.workspace-mode-library .workspace-wrap,
     body.workspace-mode-library .ai-lab-wrap,
-    body.workspace-mode-library .project-wrap { display:none !important; }
-    body.workspace-mode-editor .project-wrap { display:none !important; }
+    body.workspace-mode-library .project-wrap,
+    body.workspace-mode-library .editor-commandbar { display:none !important; }
+
+    body.workspace-mode-editor .project-wrap,
+    body.workspace-mode-editor .ai-lab-wrap { display:none !important; }
+
+    body.workspace-mode-editor .topbar { display:none; }
+    body.workspace-mode-home .topbar,
+    body.workspace-mode-library .topbar { display:flex; }
 
     .workspace-home,.workspace-library { width:min(1200px,100%); margin:0 auto; padding:2rem; }
     .workspace-hero { border:1px solid var(--border); background:linear-gradient(135deg,#202029,#17171d); padding:2rem; margin-bottom:1.25rem; }
@@ -29,10 +41,12 @@
     .workspace-card strong { display:block; margin:.85rem 0 .4rem; font-size:1.1rem; }
     .workspace-card small { color:var(--muted); line-height:1.5; }
     .workspace-state { margin-top:1rem; color:var(--accent); font-size:.74rem; font-weight:700; }
+
     .workspace-nav { position:sticky; top:0; z-index:60; display:flex; gap:.55rem; align-items:center; padding:.7rem 1rem; border-bottom:1px solid var(--border); background:rgba(21,21,27,.96); backdrop-filter:blur(8px); }
     .workspace-nav strong { margin-right:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .workspace-nav button { padding:.55rem .75rem; }
     .workspace-save-status { color:var(--muted); font-size:.76rem; }
+
     .workspace-modal-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:1rem; background:rgba(0,0,0,.72); }
     .workspace-modal-backdrop[hidden] { display:none !important; }
     .workspace-modal { width:min(520px,100%); border:1px solid var(--border); background:var(--panel); padding:1.35rem; }
@@ -44,7 +58,105 @@
     .project-row { display:grid; grid-template-columns:1fr auto auto; gap:.6rem; align-items:center; padding:.85rem; border:1px solid var(--border); background:#18181f; }
     .project-row small { display:block; margin-top:.25rem; color:var(--muted); }
     .empty-library { border:1px dashed var(--border); padding:2rem; text-align:center; color:var(--muted); }
-    @media(max-width:800px){ .workspace-grid{grid-template-columns:1fr;} .workspace-home,.workspace-library{padding:1rem;} .project-row{grid-template-columns:1fr;} .workspace-nav strong{display:none;} }
+
+    .editor-commandbar {
+      width:min(1550px,100%);
+      margin:0 auto;
+      padding:.8rem 2rem 0;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      align-items:center;
+    }
+    .editor-commandbar .editor-spacer { flex:1; }
+    .editor-commandbar button { min-height:42px; }
+    .editor-commandbar button.active { border-color:var(--accent); }
+
+    body.workspace-mode-editor .studio-layout {
+      width:min(1550px,100%);
+      grid-template-columns:86px minmax(420px,1fr) 280px;
+      gap:1rem;
+      padding-top:1rem;
+    }
+
+    body.workspace-mode-editor .tools-panel {
+      position:sticky;
+      top:68px;
+      padding:.65rem;
+      display:block;
+      min-width:0;
+    }
+    body.workspace-mode-editor .tools-panel > * { display:none !important; }
+    body.workspace-mode-editor .tools-panel .tool-buttons { display:grid !important; margin:0; grid-template-columns:1fr; gap:.45rem; }
+    body.workspace-mode-editor .tools-panel .tool-buttons button {
+      width:100%;
+      min-height:54px;
+      padding:.55rem .25rem;
+      overflow:hidden;
+      white-space:nowrap;
+      font-size:0;
+    }
+    body.workspace-mode-editor .tools-panel .tool-buttons button::first-letter { font-size:1.25rem; }
+    body.workspace-mode-editor .tools-panel .tool-buttons #handBtn { font-size:0; }
+    body.workspace-mode-editor .tools-panel .tool-buttons #handBtn::before { content:'🖐️'; font-size:1.25rem; }
+
+    body.workspace-mode-editor .canvas-panel { min-width:0; }
+    body.workspace-mode-editor .canvas-viewport { min-height:660px; }
+
+    .editor-inspector {
+      border:1px solid var(--border);
+      background:var(--panel);
+      padding:1rem;
+      position:sticky;
+      top:68px;
+      max-height:calc(100vh - 85px);
+      overflow:auto;
+    }
+    .editor-inspector h3 { margin:.2rem 0 1rem; }
+    .editor-inspector .tool-group,
+    .editor-inspector .zoom-control,
+    .editor-inspector .status-card,
+    .editor-inspector .action-status,
+    .editor-inspector .shortcut-card { display:block !important; }
+    .editor-inspector .tool-group { margin-top:1rem; }
+    .editor-inspector .zoom-control { display:flex !important; }
+    .editor-inspector .status-card { display:flex !important; }
+
+    body.workspace-mode-editor .tutorial-panel {
+      position:fixed;
+      z-index:100;
+      top:64px;
+      right:0;
+      width:min(410px,92vw);
+      height:calc(100vh - 64px);
+      overflow:auto;
+      box-shadow:-12px 0 28px rgba(0,0,0,.35);
+      transform:translateX(102%);
+      transition:transform .2s ease;
+    }
+    body.workspace-mode-editor.tutorial-open .tutorial-panel { transform:translateX(0); }
+
+    body.workspace-mode-editor .workspace-wrap { display:none; }
+    body.workspace-mode-editor.animation-open .workspace-wrap { display:block; }
+
+    .editor-panel-close {
+      width:100%;
+      margin-bottom:.8rem;
+    }
+
+    @media(max-width:1000px){
+      .workspace-grid{grid-template-columns:1fr;}
+      .workspace-home,.workspace-library{padding:1rem;}
+      .project-row{grid-template-columns:1fr;}
+      .workspace-nav strong{display:none;}
+      body.workspace-mode-editor .studio-layout { grid-template-columns:76px minmax(0,1fr); }
+      .editor-inspector { grid-column:1 / -1; position:static; max-height:none; }
+    }
+    @media(max-width:700px){
+      .editor-commandbar{padding:.7rem 1rem 0;}
+      body.workspace-mode-editor .studio-layout{padding:1rem; grid-template-columns:64px minmax(300px,1fr);}
+      body.workspace-mode-editor .canvas-viewport{min-height:480px;}
+    }
   `;
   document.head.appendChild(style);
 
@@ -57,6 +169,19 @@
     <button type="button" id="workspaceSaveBtn" hidden>💾 Guardar</button>
   `;
   document.body.insertBefore(nav, document.body.firstChild);
+
+  const commandbar = document.createElement('div');
+  commandbar.className = 'editor-commandbar';
+  commandbar.innerHTML = `
+    <button type="button" id="editorUndoBtn">↶ Deshacer</button>
+    <button type="button" id="editorRedoBtn">↷ Rehacer</button>
+    <span class="editor-spacer"></span>
+    <button type="button" id="editorTutorialBtn">📖 Tutorial</button>
+    <button type="button" id="editorAnimationBtn">🎞️ Animar</button>
+    <button type="button" id="editorAiBtn">🤖 IA</button>
+    <button type="button" id="editorExportBtn">⬇ Exportar</button>
+  `;
+  mainStudio.insertAdjacentElement('beforebegin', commandbar);
 
   const home = document.createElement('section');
   home.id = 'workspaceHome';
@@ -105,6 +230,43 @@
   modalBackdrop.innerHTML = `<div class="workspace-modal" id="workspaceModal"></div>`;
   document.body.appendChild(modalBackdrop);
 
+  function buildInspector() {
+    if (!toolsPanel || document.getElementById('editorInspector')) return;
+    const inspector = document.createElement('aside');
+    inspector.id = 'editorInspector';
+    inspector.className = 'editor-inspector';
+    inspector.innerHTML = `<p class="eyebrow">PROPIEDADES</p><h3>Color y lienzo</h3>`;
+
+    const groups = [...toolsPanel.querySelectorAll('.tool-group')];
+    groups.forEach(group => inspector.appendChild(group));
+    const zoom = toolsPanel.querySelector('.zoom-control');
+    const status = toolsPanel.querySelector('.status-card');
+    const action = toolsPanel.querySelector('.action-status');
+    const shortcuts = toolsPanel.querySelector('.shortcut-card');
+    if (zoom) inspector.appendChild(zoom);
+    if (status) inspector.appendChild(status);
+    if (action) inspector.appendChild(action);
+    if (shortcuts) inspector.appendChild(shortcuts);
+    mainStudio.appendChild(inspector);
+
+    toolsPanel.querySelector('.panel-title-row')?.remove();
+    toolsPanel.querySelector('.history-actions')?.style.setProperty('display','none','important');
+    toolsPanel.querySelector('.utility-actions')?.style.setProperty('display','none','important');
+  }
+
+  function prepareTutorialDrawer() {
+    if (!tutorialPanel || tutorialPanel.querySelector('.editor-panel-close')) return;
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'editor-panel-close';
+    close.textContent = '✕ Cerrar tutorial';
+    close.addEventListener('click', () => toggleTutorial(false));
+    tutorialPanel.insertBefore(close, tutorialPanel.firstChild);
+  }
+
+  buildInspector();
+  prepareTutorialDrawer();
+
   const saveBtn = document.getElementById('workspaceSaveBtn');
   const saveStatus = document.getElementById('workspaceSaveStatus');
   const projectTitle = document.getElementById('workspaceProjectTitle');
@@ -117,12 +279,25 @@
   }
 
   function setMode(mode) {
-    document.body.classList.remove('workspace-mode-home','workspace-mode-editor','workspace-mode-library');
+    document.body.classList.remove('workspace-mode-home','workspace-mode-editor','workspace-mode-library','tutorial-open','animation-open');
     document.body.classList.add(`workspace-mode-${mode}`);
     home.hidden = mode !== 'home';
     library.hidden = mode !== 'library';
     saveBtn.hidden = mode !== 'editor';
     if (mode !== 'home') window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function toggleTutorial(force) {
+    const next = typeof force === 'boolean' ? force : !document.body.classList.contains('tutorial-open');
+    document.body.classList.toggle('tutorial-open', next);
+    document.getElementById('editorTutorialBtn')?.classList.toggle('active', next);
+  }
+
+  function toggleAnimation(force) {
+    const next = typeof force === 'boolean' ? force : !document.body.classList.contains('animation-open');
+    document.body.classList.toggle('animation-open', next);
+    document.getElementById('editorAnimationBtn')?.classList.toggle('active', next);
+    if (next) animationWrap?.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
   function closeModal() {
@@ -223,13 +398,20 @@
 
   document.getElementById('workspaceHomeBtn')?.addEventListener('click', () => { setMode('home'); refreshProjectInfo(); });
   saveBtn?.addEventListener('click', smartSave);
+  document.getElementById('editorUndoBtn')?.addEventListener('click', () => document.getElementById('undoBtn')?.click());
+  document.getElementById('editorRedoBtn')?.addEventListener('click', () => document.getElementById('redoBtn')?.click());
+  document.getElementById('editorExportBtn')?.addEventListener('click', () => document.getElementById('exportBtn')?.click());
+  document.getElementById('editorTutorialBtn')?.addEventListener('click', () => toggleTutorial());
+  document.getElementById('editorAnimationBtn')?.addEventListener('click', () => toggleAnimation());
+  document.getElementById('editorAiBtn')?.addEventListener('click', () => window.open('ai-studio.html', '_blank', 'noopener'));
+
   modalBackdrop.addEventListener('click', event => { if (event.target === modalBackdrop) closeModal(); });
   window.addEventListener('pixelprojectchange', () => refreshProjectInfo());
   window.addEventListener('pixelsaved', () => refreshProjectInfo('Guardado ✓'));
 
-  document.querySelector('.version')?.replaceChildren(document.createTextNode('v0.6 redesign'));
+  document.querySelector('.version')?.replaceChildren(document.createTextNode('v0.7 editor redesign'));
   setMode('home');
   refreshProjectInfo();
 
-  window.PixelWorkspace = { setMode, smartSave, renderLoader };
+  window.PixelWorkspace = { setMode, smartSave, renderLoader, toggleTutorial, toggleAnimation };
 })();
