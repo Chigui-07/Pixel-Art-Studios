@@ -25,11 +25,23 @@
     document.body.appendChild(script);
   }
 
-  function loadSelectionModule() {
-    if (window.PixelSelection || document.querySelector('script[data-pixel-selection]')) return;
+  function loadSelectionHotkeys() {
+    if (document.querySelector('script[data-pixel-selection-hotkeys]')) return;
     const script = document.createElement("script");
-    script.src = "js/selection.js?v=0.8";
+    script.src = "js/selection-hotkeys.js?v=0.8.1";
+    script.dataset.pixelSelectionHotkeys = "true";
+    document.body.appendChild(script);
+  }
+
+  function loadSelectionModule() {
+    if (window.PixelSelection || document.querySelector('script[data-pixel-selection]')) {
+      loadSelectionHotkeys();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "js/selection.js?v=0.8.1";
     script.dataset.pixelSelection = "true";
+    script.addEventListener('load', loadSelectionHotkeys, { once:true });
     document.body.appendChild(script);
   }
 
