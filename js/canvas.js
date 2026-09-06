@@ -122,7 +122,6 @@ window.PixelCanvas = (() => {
     const queue = [start];
     const visited = new Set();
     let cursor = 0;
-
     while (cursor < queue.length) {
       const point = queue[cursor++];
       const key = `${point.x},${point.y}`;
@@ -250,28 +249,22 @@ window.PixelCanvas = (() => {
     if (!pixel) return;
     const coords = coordsFromPixel(pixel);
     coordinateLabel.textContent = `x: ${coords.x} · y: ${coords.y}`;
-
     if (currentTool === "eyedropper") {
       const picked = getPixelColor(pixel);
       if (picked !== EMPTY) {
         setColor(picked);
         window.dispatchEvent(new CustomEvent("pixelcolorpicked", { detail: { color: picked } }));
-      } else {
-        window.dispatchEvent(new CustomEvent("pixeltransparentpicked"));
-      }
+      } else window.dispatchEvent(new CustomEvent("pixeltransparentpicked"));
       event.preventDefault();
       return;
     }
-
     if (currentTool === "fill") {
       if (floodFill(pixel)) pushHistory();
       event.preventDefault();
       return;
     }
-
     drawing = true;
     lastPaintedPixel = null;
-
     if (currentTool === "move") {
       moveStart = coords;
       moveOrigin = snapshot();
@@ -279,10 +272,7 @@ window.PixelCanvas = (() => {
     } else if (["line", "rect", "ellipse"].includes(currentTool)) {
       shapeStart = coords;
       shapeEnd = coords;
-    } else {
-      applyDirect(pixel);
-    }
-
+    } else applyDirect(pixel);
     try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
     event.preventDefault();
   });
@@ -304,7 +294,6 @@ window.PixelCanvas = (() => {
     coordinateLabel.textContent = "x: — · y: —";
     if (drawing && ["pencil", "eraser"].includes(currentTool)) lastPaintedPixel = null;
   });
-
   canvas.addEventListener("pointerup", event => {
     try { canvas.releasePointerCapture(event.pointerId); } catch (_) {}
     stopDrawing();
@@ -321,7 +310,6 @@ window.PixelCanvas = (() => {
     if (normalized !== EMPTY) currentColor = normalized;
   }
   function getColor() { return currentColor; }
-
   function clear() {
     if (!getPixels().some(pixel => pixel.dataset.painted === "true")) return false;
     getPixels().forEach(pixel => setPixelColor(pixel, EMPTY));
@@ -365,13 +353,11 @@ window.PixelCanvas = (() => {
     canvas.classList.toggle("grid-hidden", !show);
     return show;
   }
-
   function setZoom(nextZoom) {
     zoom = Math.min(2.5, Math.max(0.35, Number(nextZoom)));
     canvas.style.width = `${Math.round(640 * zoom)}px`;
     return zoom;
   }
-
   function getZoom() { return zoom; }
 
   function exportPNG() {
@@ -401,6 +387,7 @@ window.PixelCanvas = (() => {
   return {
     setTool, setColor, getColor, clear, resize, undo, redo, canUndo, canRedo,
     toggleGrid, setZoom, getZoom, exportPNG, flipHorizontal, flipVertical, rotate90,
-    getState, loadState, getSize: () => size, getEmptyColor: () => EMPTY
+    getState, loadState, commitHistory: pushHistory,
+    getSize: () => size, getEmptyColor: () => EMPTY
   };
 })();
