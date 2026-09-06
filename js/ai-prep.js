@@ -20,15 +20,31 @@
   function loadProjectModule() {
     if (window.PixelProject || document.querySelector('script[data-pixel-project]')) return;
     const script = document.createElement("script");
-    script.src = "js/project.js?v=0.6";
+    script.src = "js/project.js?v=0.9";
     script.dataset.pixelProject = "true";
+    document.body.appendChild(script);
+  }
+
+  function loadLayersModule() {
+    if (window.PixelLayers || document.querySelector('script[data-pixel-layers]')) return;
+    const script = document.createElement("script");
+    script.src = "js/layers.js?v=0.9";
+    script.dataset.pixelLayers = "true";
+    document.body.appendChild(script);
+  }
+
+  function loadAnimationLayerBridge() {
+    if (document.querySelector('script[data-animation-layer-bridge]')) return;
+    const script = document.createElement("script");
+    script.src = "js/animation-layer-bridge.js?v=0.9";
+    script.dataset.animationLayerBridge = "true";
     document.body.appendChild(script);
   }
 
   function loadSelectionHotkeys() {
     if (document.querySelector('script[data-pixel-selection-hotkeys]')) return;
     const script = document.createElement("script");
-    script.src = "js/selection-hotkeys.js?v=0.8.1";
+    script.src = "js/selection-hotkeys.js?v=0.8.2";
     script.dataset.pixelSelectionHotkeys = "true";
     document.body.appendChild(script);
   }
@@ -39,7 +55,7 @@
       return;
     }
     const script = document.createElement("script");
-    script.src = "js/selection.js?v=0.8.1";
+    script.src = "js/selection.js?v=0.9";
     script.dataset.pixelSelection = "true";
     script.addEventListener('load', loadSelectionHotkeys, { once:true });
     document.body.appendChild(script);
@@ -65,6 +81,8 @@
   loadProjectModule();
   loadWorkspaceModule();
   loadEditorPatches();
+  loadLayersModule();
+  loadAnimationLayerBridge();
   if (!generateBtn) return;
 
   let latestSpec = null;
