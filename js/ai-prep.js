@@ -17,6 +17,15 @@
   const output = document.getElementById("aiOutput");
   const state = document.getElementById("aiState");
 
+  function loadProjectModule() {
+    if (window.PixelProject || document.querySelector('script[data-pixel-project]')) return;
+    const script = document.createElement("script");
+    script.src = "js/project.js?v=0.5";
+    script.dataset.pixelProject = "true";
+    document.body.appendChild(script);
+  }
+
+  loadProjectModule();
   if (!generateBtn) return;
 
   let latestSpec = null;
@@ -28,12 +37,12 @@
     árbol: { category: "nature", style: "rpg", palette: "natural", perspective: "front" },
     cofre: { category: "item", style: "rpg", palette: "warm", perspective: "three-quarter" },
     casa: { category: "building", style: "rpg", palette: "natural", perspective: "three-quarter" },
-    personaje: { category: "character", style: "rpg", palette: "balanced", perspective: "front" }
+    personaje: { category: "character", style: "rumbo", palette: "balanced", perspective: "front" },
+    animación: { category: "animation", style: "rumbo", palette: "balanced", perspective: "front" },
+    animacion: { category: "animation", style: "rumbo", palette: "balanced", perspective: "front" }
   };
 
-  function normalizedObject() {
-    return objectInput.value.trim();
-  }
+  function normalizedObject() { return objectInput.value.trim(); }
 
   function suggestPreset() {
     const key = normalizedObject().toLowerCase();
@@ -73,7 +82,7 @@
   }
 
   function renderSpec(spec) {
-    const readable = [
+    output.textContent = [
       `OBJETO: ${spec.subject}`,
       `CATEGORÍA: ${spec.category}`,
       `FORMATO: ${spec.canvas}`,
@@ -94,12 +103,9 @@
       "• guía gráfica acumulativa",
       "• sprite final"
     ].join("\n");
-    output.textContent = readable;
   }
 
-  function setState(text) {
-    state.textContent = text;
-  }
+  function setState(text) { state.textContent = text; }
 
   objectInput.addEventListener("change", suggestPreset);
 
