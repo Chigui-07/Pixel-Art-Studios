@@ -2,10 +2,7 @@
   const mainStudio = document.querySelector('.studio-layout');
   const animationWrap = document.querySelector('.workspace-wrap');
   const aiWrap = document.querySelector('.ai-lab-wrap');
-  const projectWrap = document.querySelector('.project-wrap');
-  const tutorialPanel = document.querySelector('.tutorial-panel');
   const header = document.querySelector('.topbar');
-
   if (!mainStudio || document.getElementById('workspaceHome')) return;
 
   const style = document.createElement('style');
@@ -15,107 +12,48 @@
     body.workspace-mode-home .workspace-wrap,
     body.workspace-mode-home .ai-lab-wrap,
     body.workspace-mode-home .project-wrap { display:none !important; }
+    body.workspace-mode-library .studio-layout,
+    body.workspace-mode-library .workspace-wrap,
+    body.workspace-mode-library .ai-lab-wrap,
+    body.workspace-mode-library .project-wrap { display:none !important; }
+    body.workspace-mode-editor .project-wrap { display:none !important; }
 
-    body.workspace-mode-draw .workspace-wrap,
-    body.workspace-mode-draw .ai-lab-wrap { display:none !important; }
-
-    body.workspace-mode-animation .ai-lab-wrap { display:none !important; }
-    body.workspace-mode-animation .tutorial-panel { display:none !important; }
-    body.workspace-mode-animation .studio-layout { grid-template-columns:minmax(220px,270px) minmax(420px,1fr); }
-
-    body.workspace-mode-ai .studio-layout,
-    body.workspace-mode-ai .workspace-wrap,
-    body.workspace-mode-ai .project-wrap { display:none !important; }
-
-    body.workspace-mode-project .studio-layout,
-    body.workspace-mode-project .workspace-wrap,
-    body.workspace-mode-project .ai-lab-wrap { display:none !important; }
-
-    .workspace-home {
-      width:min(1450px,100%);
-      margin:0 auto;
-      padding:2rem;
-    }
-
-    .workspace-hero {
-      border:1px solid var(--border);
-      background:linear-gradient(135deg,#202029,#17171d);
-      padding:2rem;
-      margin-bottom:1.25rem;
-    }
-
+    .workspace-home,.workspace-library { width:min(1200px,100%); margin:0 auto; padding:2rem; }
+    .workspace-hero { border:1px solid var(--border); background:linear-gradient(135deg,#202029,#17171d); padding:2rem; margin-bottom:1.25rem; }
     .workspace-hero h2 { margin:.35rem 0 .7rem; font-size:clamp(1.8rem,4vw,3rem); }
-    .workspace-hero p { max-width:850px; color:var(--muted); line-height:1.6; }
-
-    .workspace-grid {
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:1rem;
-    }
-
-    .workspace-card {
-      text-align:left;
-      min-height:180px;
-      padding:1.25rem;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      border:1px solid var(--border);
-      background:var(--panel);
-      color:var(--text);
-    }
-
+    .workspace-hero p { max-width:780px; color:var(--muted); line-height:1.6; }
+    .workspace-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+    .workspace-card { text-align:left; min-height:190px; padding:1.35rem; display:flex; flex-direction:column; justify-content:space-between; border:1px solid var(--border); background:var(--panel); color:var(--text); }
     .workspace-card:hover { border-color:var(--accent); transform:translateY(-2px); }
-    .workspace-card .workspace-icon { font-size:2rem; }
-    .workspace-card strong { display:block; margin:.75rem 0 .35rem; font-size:1.05rem; }
-    .workspace-card small { color:var(--muted); line-height:1.45; }
-    .workspace-card .workspace-state { margin-top:1rem; color:var(--accent); font-size:.72rem; font-weight:700; }
-
-    .workspace-nav {
-      position:sticky;
-      top:0;
-      z-index:50;
-      display:flex;
-      gap:.55rem;
-      align-items:center;
-      padding:.7rem 1rem;
-      border-bottom:1px solid var(--border);
-      background:rgba(21,21,27,.96);
-      backdrop-filter:blur(8px);
-    }
-
-    .workspace-nav strong { margin-right:auto; }
+    .workspace-icon { font-size:2.2rem; }
+    .workspace-card strong { display:block; margin:.85rem 0 .4rem; font-size:1.1rem; }
+    .workspace-card small { color:var(--muted); line-height:1.5; }
+    .workspace-state { margin-top:1rem; color:var(--accent); font-size:.74rem; font-weight:700; }
+    .workspace-nav { position:sticky; top:0; z-index:60; display:flex; gap:.55rem; align-items:center; padding:.7rem 1rem; border-bottom:1px solid var(--border); background:rgba(21,21,27,.96); backdrop-filter:blur(8px); }
+    .workspace-nav strong { margin-right:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .workspace-nav button { padding:.55rem .75rem; }
-    .workspace-nav button.active { border-color:var(--accent); }
-
-    .workspace-section-label {
-      width:min(1550px,100%);
-      margin:1rem auto 0;
-      padding:0 2rem;
-      color:var(--muted);
-      font-size:.8rem;
-    }
-
-    @media(max-width:1000px){ .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-    @media(max-width:700px){
-      .workspace-home{padding:1rem;}
-      .workspace-grid{grid-template-columns:1fr;}
-      .workspace-nav{overflow-x:auto;}
-      .workspace-nav strong{display:none;}
-      .workspace-card{min-height:150px;}
-    }
+    .workspace-save-status { color:var(--muted); font-size:.76rem; }
+    .workspace-modal-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:1rem; background:rgba(0,0,0,.72); }
+    .workspace-modal { width:min(520px,100%); border:1px solid var(--border); background:var(--panel); padding:1.35rem; }
+    .workspace-modal h3 { margin:.3rem 0 .6rem; }
+    .workspace-modal p { color:var(--muted); line-height:1.5; }
+    .workspace-modal input { width:100%; padding:.8rem; margin:.7rem 0; border:1px solid var(--border); background:var(--panel-2); color:var(--text); }
+    .workspace-modal-actions { display:flex; gap:.55rem; justify-content:flex-end; margin-top:.8rem; }
+    .project-list { display:grid; gap:.65rem; margin-top:1rem; }
+    .project-row { display:grid; grid-template-columns:1fr auto auto; gap:.6rem; align-items:center; padding:.85rem; border:1px solid var(--border); background:#18181f; }
+    .project-row small { display:block; margin-top:.25rem; color:var(--muted); }
+    .empty-library { border:1px dashed var(--border); padding:2rem; text-align:center; color:var(--muted); }
+    @media(max-width:800px){ .workspace-grid{grid-template-columns:1fr;} .workspace-home,.workspace-library{padding:1rem;} .project-row{grid-template-columns:1fr;} .workspace-nav strong{display:none;} }
   `;
   document.head.appendChild(style);
 
   const nav = document.createElement('nav');
   nav.className = 'workspace-nav';
   nav.innerHTML = `
-    <strong>Pixel Art Studios</strong>
-    <button type="button" data-workspace="home">⌂ Inicio</button>
-    <button type="button" data-workspace="draw">🎨 Editor</button>
-    <button type="button" data-workspace="animation">🎞️ Animación</button>
-    <button type="button" data-workspace="project">💾 Proyecto</button>
-    <button type="button" data-workspace="ai">🤖 AI Lab</button>
+    <strong id="workspaceProjectTitle">Pixel Art Studios</strong>
+    <span id="workspaceSaveStatus" class="workspace-save-status"></span>
+    <button type="button" id="workspaceHomeBtn">⌂ Inicio</button>
+    <button type="button" id="workspaceSaveBtn" hidden>💾 Guardar</button>
   `;
   document.body.insertBefore(nav, document.body.firstChild);
 
@@ -124,125 +62,173 @@
   home.className = 'workspace-home';
   home.innerHTML = `
     <div class="workspace-hero">
-      <p class="eyebrow">PIXEL ART STUDIOS · WORKSPACE</p>
-      <h2>¿Qué vas a crear hoy?</h2>
-      <p>Elige un área de trabajo. La versión estable sigue intacta en <strong>main</strong>; este rediseño vive en la rama <strong>redesign/menu-workspace</strong> mientras organizamos el estudio para producción de RUMBO.</p>
+      <p class="eyebrow">PIXEL ART STUDIOS</p>
+      <h2>¿Qué quieres hacer?</h2>
+      <p>Un inicio simple para entrar al taller, revisar tu biblioteca o continuar un proyecto guardado.</p>
     </div>
-
     <div class="workspace-grid">
-      <button class="workspace-card" type="button" data-workspace="draw" data-preset="object">
-        <span><span class="workspace-icon">📦</span><strong>Objeto / Asset</strong><small>Muebles, comida, props, decoración, herramientas y objetos del mundo.</small></span>
-        <span class="workspace-state">ABRIR EDITOR →</span>
+      <button class="workspace-card" type="button" data-home-action="editor">
+        <span><span class="workspace-icon">🎨</span><strong>Abrir editor</strong><small>Dibuja, anima, crea escenas, tilesets y assets desde un solo espacio de trabajo.</small></span>
+        <span class="workspace-state">ENTRAR AL TALLER →</span>
       </button>
-
-      <button class="workspace-card" type="button" data-workspace="draw" data-preset="character">
-        <span><span class="workspace-icon">🧍</span><strong>Personaje</strong><small>Diseña sprites base, poses, ropa, expresiones y variantes de personajes.</small></span>
-        <span class="workspace-state">ABRIR EDITOR →</span>
+      <button class="workspace-card" type="button" data-home-action="library">
+        <span><span class="workspace-icon">📚</span><strong>Biblioteca</strong><small>Consulta personajes, objetos, animaciones y otros assets reutilizables de RUMBO.</small></span>
+        <span class="workspace-state">ABRIR BIBLIOTECA →</span>
       </button>
-
-      <button class="workspace-card" type="button" data-workspace="animation">
-        <span><span class="workspace-icon">🎞️</span><strong>Animación</strong><small>Frames, onion skin, duración individual y spritesheets para movimientos y escenas.</small></span>
-        <span class="workspace-state">ABRIR ANIMATION LAB →</span>
-      </button>
-
-      <button class="workspace-card" type="button" data-workspace="draw" data-preset="scene">
-        <span><span class="workspace-icon">🏙️</span><strong>Escena</strong><small>Habitaciones, exteriores, fondos y composiciones para secuencias del juego.</small></span>
-        <span class="workspace-state">ABRIR EDITOR →</span>
-      </button>
-
-      <button class="workspace-card" type="button" data-workspace="draw" data-preset="tile">
-        <span><span class="workspace-icon">🧱</span><strong>Tileset</strong><small>Pisos, paredes, caminos, vegetación y piezas reutilizables de mapas.</small></span>
-        <span class="workspace-state">ABRIR EDITOR →</span>
-      </button>
-
-      <button class="workspace-card" type="button" data-workspace="ai">
-        <span><span class="workspace-icon">🤖</span><strong>AI Lab</strong><small>Prepara especificaciones para objetos, personajes, animaciones y escenas asistidas por IA.</small></span>
-        <span class="workspace-state">ABRIR AI LAB →</span>
-      </button>
-
-      <button class="workspace-card" type="button" data-workspace="project">
-        <span><span class="workspace-icon">💾</span><strong>Proyectos</strong><small>Guardar, cargar, importar y exportar trabajos completos de producción.</small></span>
-        <span class="workspace-state">GESTIONAR PROYECTO →</span>
-      </button>
-
-      <button class="workspace-card" type="button" data-workspace="draw" data-preset="effect">
-        <span><span class="workspace-icon">✨</span><strong>Efectos</strong><small>Brillos, polvo, lluvia, humo y pequeños efectos animados en pixel art.</small></span>
-        <span class="workspace-state">ABRIR EDITOR →</span>
-      </button>
-
-      <button class="workspace-card" type="button" disabled>
-        <span><span class="workspace-icon">📚</span><strong>Biblioteca RUMBO</strong><small>Personajes y assets reutilizables. Será el siguiente módulo grande.</small></span>
-        <span class="workspace-state">PRÓXIMAMENTE</span>
+      <button class="workspace-card" type="button" data-home-action="load">
+        <span><span class="workspace-icon">📂</span><strong>Cargar proyecto</strong><small>Continúa cualquiera de tus proyectos guardados o importa un archivo de Pixel Art Studios.</small></span>
+        <span class="workspace-state">VER PROYECTOS →</span>
       </button>
     </div>
   `;
-
   if (header) header.insertAdjacentElement('afterend', home);
   else document.body.insertBefore(home, mainStudio);
 
-  const label = document.createElement('div');
-  label.className = 'workspace-section-label';
-  label.id = 'workspaceSectionLabel';
-  mainStudio.insertAdjacentElement('beforebegin', label);
+  const library = document.createElement('section');
+  library.id = 'workspaceLibrary';
+  library.className = 'workspace-library';
+  library.hidden = true;
+  library.innerHTML = `
+    <div class="workspace-hero">
+      <p class="eyebrow">BIBLIOTECA RUMBO</p>
+      <h2>Assets reutilizables</h2>
+      <p>Aquí organizaremos personajes, objetos, tilesets, escenas y animaciones guardadas como assets.</p>
+    </div>
+    <div class="empty-library">📚 La estructura está lista. El siguiente paso será diseñar categorías, tarjetas y guardado de assets.</div>
+  `;
+  home.insertAdjacentElement('afterend', library);
 
-  function ensureProjectVisible() {
-    const currentProject = document.querySelector('.project-wrap');
-    return currentProject;
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'workspace-modal-backdrop';
+  modalBackdrop.hidden = true;
+  modalBackdrop.innerHTML = `<div class="workspace-modal" id="workspaceModal"></div>`;
+  document.body.appendChild(modalBackdrop);
+
+  const saveBtn = document.getElementById('workspaceSaveBtn');
+  const saveStatus = document.getElementById('workspaceSaveStatus');
+  const projectTitle = document.getElementById('workspaceProjectTitle');
+
+  function refreshProjectInfo(message = '') {
+    const info = window.PixelProject?.getCurrentInfo?.() || { named:false, name:null };
+    projectTitle.textContent = info.named ? info.name : 'Pixel Art Studios';
+    if (message) saveStatus.textContent = message;
+    else saveStatus.textContent = info.named ? 'Proyecto activo' : '';
   }
 
-  function applyPreset(preset) {
-    const category = document.getElementById('aiCategory');
-    if (!category || !preset) return;
-    const map = {
-      object: 'item',
-      character: 'character',
-      scene: 'scene',
-      tile: 'tile',
-      effect: 'item'
-    };
-    if (map[preset]) category.value = map[preset];
-  }
-
-  function setWorkspace(mode, preset = null) {
-    document.body.classList.remove('workspace-mode-home','workspace-mode-draw','workspace-mode-animation','workspace-mode-ai','workspace-mode-project');
+  function setMode(mode) {
+    document.body.classList.remove('workspace-mode-home','workspace-mode-editor','workspace-mode-library');
     document.body.classList.add(`workspace-mode-${mode}`);
-    applyPreset(preset);
-
     home.hidden = mode !== 'home';
-    const project = ensureProjectVisible();
-    if (project) project.style.display = '';
+    library.hidden = mode !== 'library';
+    saveBtn.hidden = mode !== 'editor';
+    if (mode !== 'home') window.scrollTo({ top:0, behavior:'smooth' });
+  }
 
-    const labels = {
-      home: '',
-      draw: preset === 'character' ? 'PERSONAJE · EDITOR' : preset === 'scene' ? 'ESCENA · EDITOR' : preset === 'tile' ? 'TILESET · EDITOR' : preset === 'effect' ? 'EFECTOS · EDITOR' : 'OBJETO / ASSET · EDITOR',
-      animation: 'ANIMACIÓN · EDITOR + TIMELINE',
-      ai: 'AI LAB · ESPECIFICACIONES',
-      project: 'PROYECTO · GUARDAR / CARGAR'
-    };
-    label.textContent = labels[mode] || '';
-    label.hidden = mode === 'home';
+  function closeModal() {
+    modalBackdrop.hidden = true;
+    document.getElementById('workspaceModal').innerHTML = '';
+  }
 
-    nav.querySelectorAll('[data-workspace]').forEach(button => {
-      button.classList.toggle('active', button.dataset.workspace === mode);
+  function openNameModal() {
+    const modal = document.getElementById('workspaceModal');
+    modal.innerHTML = `
+      <p class="eyebrow">PRIMER GUARDADO</p>
+      <h3>Nombre del proyecto</h3>
+      <p>Solo te lo pediremos esta vez. Después el botón Guardar actualizará este mismo proyecto directamente.</p>
+      <input id="firstProjectName" type="text" maxlength="80" placeholder="Ej. Nicolás base, Animación despertar..." autofocus>
+      <div class="workspace-modal-actions">
+        <button type="button" data-modal-close>Cancelar</button>
+        <button type="button" id="confirmFirstSave">Guardar proyecto</button>
+      </div>`;
+    modalBackdrop.hidden = false;
+    requestAnimationFrame(() => document.getElementById('firstProjectName')?.focus());
+    document.getElementById('confirmFirstSave')?.addEventListener('click', () => {
+      const name = document.getElementById('firstProjectName')?.value.trim();
+      if (!name) return;
+      if (window.PixelProject.saveNamed(name)) {
+        closeModal();
+        refreshProjectInfo('Guardado ✓');
+      }
     });
+  }
 
-    if (mode !== 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
+  function smartSave() {
+    const info = window.PixelProject?.getCurrentInfo?.();
+    if (!info?.named) return openNameModal();
+    if (window.PixelProject.saveCurrent()) refreshProjectInfo('Guardado ✓');
+  }
+
+  function renderLoader() {
+    const projects = window.PixelProject?.getProjects?.() || [];
+    const modal = document.getElementById('workspaceModal');
+    modal.innerHTML = `
+      <p class="eyebrow">CARGAR PROYECTO</p>
+      <h3>Tus proyectos</h3>
+      <p>Abre un guardado del navegador o importa un archivo <code>.pixelstudio.json</code>.</p>
+      <div id="savedProjectList" class="project-list"></div>
+      <div class="workspace-modal-actions">
+        <input id="workspaceImportInput" type="file" accept=".json,.pixelstudio.json,application/json" hidden>
+        <button type="button" id="workspaceImportBtn">⬆ Importar archivo</button>
+        <button type="button" data-modal-close>Cerrar</button>
+      </div>`;
+    const list = document.getElementById('savedProjectList');
+    if (!projects.length) list.innerHTML = '<div class="empty-library">Todavía no hay proyectos guardados.</div>';
+    projects.forEach(project => {
+      const row = document.createElement('div');
+      row.className = 'project-row';
+      row.innerHTML = `<div><strong>${project.name}</strong><small>${new Date(project.savedAt).toLocaleString()}</small></div><button type="button">Abrir</button><button type="button">Eliminar</button>`;
+      const [open, remove] = row.querySelectorAll('button');
+      open.addEventListener('click', () => {
+        if (window.PixelProject.loadProjectById(project.id)) {
+          closeModal();
+          setMode('editor');
+          refreshProjectInfo('Proyecto cargado');
+        }
+      });
+      remove.addEventListener('click', () => {
+        window.PixelProject.deleteProject(project.id);
+        renderLoader();
+      });
+      list.appendChild(row);
+    });
+    modalBackdrop.hidden = false;
+
+    document.getElementById('workspaceImportBtn')?.addEventListener('click', () => document.getElementById('workspaceImportInput')?.click());
+    document.getElementById('workspaceImportInput')?.addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        await window.PixelProject.importFile(file);
+        closeModal();
+        setMode('editor');
+        refreshProjectInfo('Proyecto importado');
+      } catch (error) {
+        alert(`No se pudo importar: ${error.message}`);
+      }
+    });
   }
 
   document.addEventListener('click', event => {
-    const button = event.target.closest('[data-workspace]');
-    if (!button || button.disabled) return;
-    setWorkspace(button.dataset.workspace, button.dataset.preset || null);
+    if (event.target.closest('[data-modal-close]')) return closeModal();
+    const action = event.target.closest('[data-home-action]')?.dataset.homeAction;
+    if (action === 'editor') {
+      window.PixelProject?.newProject?.();
+      setMode('editor');
+      refreshProjectInfo();
+    }
+    if (action === 'library') setMode('library');
+    if (action === 'load') renderLoader();
   });
 
-  const observer = new MutationObserver(() => {
-    const project = ensureProjectVisible();
-    if (project && document.body.classList.contains('workspace-mode-home')) project.style.display = 'none';
-  });
-  observer.observe(document.body, { childList:true, subtree:false });
+  document.getElementById('workspaceHomeBtn')?.addEventListener('click', () => { setMode('home'); refreshProjectInfo(); });
+  saveBtn?.addEventListener('click', smartSave);
+  modalBackdrop.addEventListener('click', event => { if (event.target === modalBackdrop) closeModal(); });
+  window.addEventListener('pixelprojectchange', () => refreshProjectInfo());
+  window.addEventListener('pixelsaved', () => refreshProjectInfo('Guardado ✓'));
 
   document.querySelector('.version')?.replaceChildren(document.createTextNode('v0.6 redesign'));
-  setWorkspace('home');
+  setMode('home');
+  refreshProjectInfo();
 
-  window.PixelWorkspace = { setWorkspace };
+  window.PixelWorkspace = { setMode, smartSave, renderLoader };
 })();
