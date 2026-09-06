@@ -20,7 +20,7 @@
   function loadProjectModule() {
     if (window.PixelProject || document.querySelector('script[data-pixel-project]')) return;
     const script = document.createElement("script");
-    script.src = "js/project.js?v=0.5";
+    script.src = "js/project.js?v=0.6";
     script.dataset.pixelProject = "true";
     document.body.appendChild(script);
   }
@@ -28,7 +28,7 @@
   function loadWorkspaceModule() {
     if (window.PixelWorkspace || document.querySelector('script[data-pixel-workspace]')) return;
     const script = document.createElement("script");
-    script.src = "js/workspace.js?v=0.6";
+    script.src = "js/workspace.js?v=0.7";
     script.dataset.pixelWorkspace = "true";
     document.body.appendChild(script);
   }
