@@ -47,6 +47,15 @@ window.PixelSelection = (() => {
     statusTimer = setTimeout(() => actionStatus.classList.remove('visible'), 2200);
   }
 
+  function editableState() {
+    return window.PixelCanvas.getActiveLayerState?.() || window.PixelCanvas.getState();
+  }
+
+  function loadEditableState(state, options = {}) {
+    if (window.PixelCanvas.loadActiveLayerState) return window.PixelCanvas.loadActiveLayerState(state, options);
+    return window.PixelCanvas.loadState(state, options);
+  }
+
   function coords(pixel) {
     const size = window.PixelCanvas.getSize();
     const index = Number(pixel.dataset.index);
@@ -128,7 +137,7 @@ window.PixelSelection = (() => {
 
   function selectedData() {
     if (!selection) return null;
-    const state = window.PixelCanvas.getState();
+    const state = editableState();
     const pixels=[];
     for (let y=0; y<selection.h; y++) {
       for (let x=0; x<selection.w; x++) {
@@ -150,11 +159,11 @@ window.PixelSelection = (() => {
     const data=selectedData();
     if (!data) return showStatus('Primero crea una selección.');
     clipboard={...data,pixels:[...data.pixels]};
-    const state=window.PixelCanvas.getState();
+    const state=editableState();
     for (let y=selection.y;y<selection.y+selection.h;y++) {
       for (let x=selection.x;x<selection.x+selection.w;x++) state.pixels[y*state.size+x]=EMPTY;
     }
-    window.PixelCanvas.loadState(state,{resetHistory:false});
+    loadEditableState(state,{resetHistory:false});
     window.PixelCanvas.commitHistory();
     renderSelection();
     showStatus('Selección cortada.');
@@ -163,7 +172,7 @@ window.PixelSelection = (() => {
 
   function paste() {
     if (!clipboard) return showStatus('No hay nada copiado.');
-    const state=window.PixelCanvas.getState();
+    const state=editableState();
     const x0=selection?.x ?? Math.max(0,Math.floor((state.size-clipboard.w)/2));
     const y0=selection?.y ?? Math.max(0,Math.floor((state.size-clipboard.h)/2));
     for (let y=0;y<clipboard.h;y++) {
@@ -173,7 +182,7 @@ window.PixelSelection = (() => {
         state.pixels[ty*state.size+tx]=clipboard.pixels[y*clipboard.w+x];
       }
     }
-    window.PixelCanvas.loadState(state,{resetHistory:false});
+    loadEditableState(state,{resetHistory:false});
     window.PixelCanvas.commitHistory();
     selection={x:x0,y:y0,w:clipboard.w,h:clipboard.h};
     renderSelection();
@@ -183,11 +192,11 @@ window.PixelSelection = (() => {
 
   function deleteSelection() {
     if (!selection) return false;
-    const state=window.PixelCanvas.getState();
+    const state=editableState();
     for (let y=selection.y;y<selection.y+selection.h;y++) {
       for (let x=selection.x;x<selection.x+selection.w;x++) state.pixels[y*state.size+x]=EMPTY;
     }
-    window.PixelCanvas.loadState(state,{resetHistory:false});
+    loadEditableState(state,{resetHistory:false});
     window.PixelCanvas.commitHistory();
     renderSelection();
     showStatus('Contenido de la selección eliminado.');
@@ -211,10 +220,10 @@ window.PixelSelection = (() => {
       const color=grabbed[y*selection.w+x];
       if (color!==EMPTY) next[ty*size+tx]=color;
     }
-    window.PixelCanvas.loadState({size,pixels:next},{resetHistory:false});
+    loadEditableState({size,pixels:next},{resetHistory:false});
     selection={...selection,x:Math.max(0,Math.min(size-selection.w,selection.x+dx)),y:Math.max(0,Math.min(size-selection.h,selection.y+dy))};
     moveStart=point;
-    moveOrigin=window.PixelCanvas.getState();
+    moveOrigin=editableState();
     renderSelection();
   }
 
@@ -226,7 +235,7 @@ window.PixelSelection = (() => {
     if (selection && contains(selection,p)) {
       moving=true;
       moveStart=p;
-      moveOrigin=window.PixelCanvas.getState();
+      moveOrigin=editableState();
       canvas.classList.add('selection-moving');
     } else {
       selecting=true;
@@ -277,6 +286,7 @@ window.PixelSelection = (() => {
 
   window.addEventListener('pixelsizechange',()=>{ selection=null; clearVisual(); });
   window.addEventListener('pixelprojectloaded',()=>{ selection=null; clearVisual(); });
+  window.addEventListener('pixellayerchange',()=>{ selection=null; clearVisual(); });
 
   function installActions() {
     const inspector=document.getElementById('editorInspector');
