@@ -1,5 +1,5 @@
 window.PixelCanvas = (() => {
-  const EMPTY = "#ffffff";
+  const EMPTY = "transparent";
   const MAX_HISTORY = 60;
 
   let size = 16;
@@ -21,7 +21,8 @@ window.PixelCanvas = (() => {
   const coordinateLabel = document.getElementById("coordinateLabel");
 
   function normalizeColor(color) {
-    if (!color) return EMPTY;
+    if (!color || color === "transparent" || color === "rgba(0, 0, 0, 0)") return EMPTY;
+    if (color.startsWith("rgba") && /,\s*0\s*\)$/.test(color)) return EMPTY;
     if (color.startsWith("rgb")) {
       const values = color.match(/\d+/g)?.slice(0, 3).map(Number) || [255, 255, 255];
       return `#${values.map(v => v.toString(16).padStart(2, "0")).join("")}`;
@@ -30,13 +31,14 @@ window.PixelCanvas = (() => {
   }
 
   function getPixels() { return [...canvas.children]; }
-  function getPixelColor(pixel) { return pixel ? normalizeColor(pixel.style.background || EMPTY) : EMPTY; }
+  function getPixelColor(pixel) { return pixel ? normalizeColor(pixel.dataset.color || pixel.style.background || EMPTY) : EMPTY; }
 
   function setPixelColor(pixel, color) {
     if (!pixel) return;
     const normalized = normalizeColor(color);
-    pixel.style.background = normalized;
+    pixel.dataset.color = normalized;
     pixel.dataset.painted = normalized === EMPTY ? "false" : "true";
+    pixel.style.background = normalized === EMPTY ? "transparent" : normalized;
   }
 
   function updateCounter() {
@@ -188,7 +190,7 @@ window.PixelCanvas = (() => {
     const result = new Array(size * size).fill(EMPTY);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        const color = origin[y * size + x];
+        const color = normalizeColor(origin[y * size + x]);
         if (color === EMPTY) continue;
         const nx = x + dx, ny = y + dy;
         if (nx >= 0 && nx < size && ny >= 0 && ny < size) result[ny * size + nx] = color;
@@ -234,7 +236,8 @@ window.PixelCanvas = (() => {
       pixel.className = "pixel";
       pixel.dataset.index = i;
       pixel.dataset.painted = "false";
-      pixel.style.background = EMPTY;
+      pixel.dataset.color = EMPTY;
+      pixel.style.background = "transparent";
       canvas.appendChild(pixel);
     }
     updateCounter();
@@ -250,8 +253,12 @@ window.PixelCanvas = (() => {
 
     if (currentTool === "eyedropper") {
       const picked = getPixelColor(pixel);
-      setColor(picked);
-      window.dispatchEvent(new CustomEvent("pixelcolorpicked", { detail: { color: picked } }));
+      if (picked !== EMPTY) {
+        setColor(picked);
+        window.dispatchEvent(new CustomEvent("pixelcolorpicked", { detail: { color: picked } }));
+      } else {
+        window.dispatchEvent(new CustomEvent("pixeltransparentpicked"));
+      }
       event.preventDefault();
       return;
     }
@@ -309,7 +316,10 @@ window.PixelCanvas = (() => {
   canvas.addEventListener("contextmenu", event => event.preventDefault());
 
   function setTool(tool) { stopDrawing(); currentTool = tool; }
-  function setColor(color) { currentColor = normalizeColor(color); }
+  function setColor(color) {
+    const normalized = normalizeColor(color);
+    if (normalized !== EMPTY) currentColor = normalized;
+  }
   function getColor() { return currentColor; }
 
   function clear() {
@@ -344,7 +354,7 @@ window.PixelCanvas = (() => {
     if (!state || !Array.isArray(state.pixels)) return false;
     if (Number(state.size) !== size) buildGrid(Number(state.size));
     if (state.pixels.length !== size * size) return false;
-    restore(state.pixels);
+    restore(state.pixels.map(normalizeColor));
     if (options.resetHistory !== false) resetHistory();
     window.dispatchEvent(new CustomEvent("pixelstatechange"));
     return true;
@@ -371,7 +381,9 @@ window.PixelCanvas = (() => {
     const context = output.getContext("2d");
     context.imageSmoothingEnabled = false;
     getPixels().forEach((pixel, index) => {
-      context.fillStyle = getPixelColor(pixel);
+      const color = getPixelColor(pixel);
+      if (color === EMPTY) return;
+      context.fillStyle = color;
       context.fillRect(index % size, Math.floor(index / size), 1, 1);
     });
     const link = document.createElement("a");
@@ -389,6 +401,6 @@ window.PixelCanvas = (() => {
   return {
     setTool, setColor, getColor, clear, resize, undo, redo, canUndo, canRedo,
     toggleGrid, setZoom, getZoom, exportPNG, flipHorizontal, flipVertical, rotate90,
-    getState, loadState, getSize: () => size
+    getState, loadState, getSize: () => size, getEmptyColor: () => EMPTY
   };
 })();
