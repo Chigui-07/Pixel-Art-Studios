@@ -21,11 +21,12 @@ window.PixelProject = (() => {
     const animation = window.PixelAnimation?.getProjectState?.();
     return {
       format: "pixel-art-studios-project-v1",
-      appVersion: "0.6-redesign",
+      appVersion: "0.9-layers",
       id: currentProjectId,
       name,
       savedAt: new Date().toISOString(),
       canvas: window.PixelCanvas.getState(),
+      layers: window.PixelCanvas.getLayerState?.() || null,
       animation: animation || null
     };
   }
@@ -42,10 +43,14 @@ window.PixelProject = (() => {
     currentProjectName = data.name || "Proyecto";
     localStorage.setItem(ACTIVE_KEY, currentProjectId);
 
-    if (data.animation?.frames?.length && window.PixelAnimation?.loadProjectState) {
-      window.PixelAnimation.loadProjectState(data.animation);
+    if (data.layers?.layers?.length && window.PixelCanvas.loadLayerState) {
+      window.PixelCanvas.loadLayerState(data.layers);
     } else {
       window.PixelCanvas.loadState(data.canvas);
+    }
+
+    if (data.animation?.frames?.length && window.PixelAnimation?.loadProjectState) {
+      window.PixelAnimation.loadProjectState(data.animation, { preserveCanvas: true });
     }
 
     const sizeSelect = document.getElementById("sizeSelect");
