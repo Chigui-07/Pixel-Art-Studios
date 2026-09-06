@@ -25,7 +25,16 @@
     document.body.appendChild(script);
   }
 
+  function loadWorkspaceModule() {
+    if (window.PixelWorkspace || document.querySelector('script[data-pixel-workspace]')) return;
+    const script = document.createElement("script");
+    script.src = "js/workspace.js?v=0.6";
+    script.dataset.pixelWorkspace = "true";
+    document.body.appendChild(script);
+  }
+
   loadProjectModule();
+  loadWorkspaceModule();
   if (!generateBtn) return;
 
   let latestSpec = null;
