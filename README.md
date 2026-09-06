@@ -2,9 +2,9 @@
 
 Pixel Art Studios es una aplicación web para **aprender, practicar, crear y animar pixel art**.
 
-La meta es que el estudio sirva tanto para aprender como para producir assets reales: objetos, personajes, animaciones, escenas, tilesets y efectos, siempre en pixel art.
+La meta es que el estudio sirva tanto para aprender como para producir assets reales para proyectos como RUMBO: objetos, personajes, animaciones, escenas, tilesets y efectos, siempre en pixel art.
 
-## 🧩 Versión actual — v0.4.1
+## 🧩 Versión actual — v0.5
 
 ### Formatos del editor
 
@@ -18,7 +18,7 @@ La meta es que el estudio sirva tanto para aprender como para producir assets re
 
 Los tutoriales de la manzana siguen disponibles en 8×8, 16×16 y 32×32. Los demás tamaños funcionan como modo libre de producción y animación.
 
-### Herramientas de dibujo y color
+## 🎨 Herramientas de dibujo
 
 - ✏️ Lápiz con dibujo continuo.
 - 🧽 Borrador.
@@ -27,64 +27,69 @@ Los tutoriales de la manzana siguen disponibles en 8×8, 16×16 y 32×32. Los de
 - ╱ Línea.
 - ▭ Rectángulo.
 - ◯ Elipse/círculo.
-- 🖐️ Mano para desplazar el lienzo sin pintar.
+- 🖐️ Mover dibujo completo dentro del lienzo.
 - Selector de color.
 - Paleta rápida.
 - ☀️ Aclarar color activo.
 - 🌑 Oscurecer color activo.
 
-La herramienta Mano puede activarse con `H`. También puede usarse temporalmente manteniendo presionada la barra espaciadora: al soltarla se vuelve a la herramienta anterior.
+### Navegación
 
-### Utilidades
+- `H` activa Mover dibujo.
+- `Espacio + arrastrar` mueve solamente la vista del lienzo.
 
-- Deshacer y rehacer.
-- Historial de estados.
-- Voltear horizontal y vertical.
-- Rotar 90°.
-- Mostrar/ocultar cuadrícula.
-- Zoom para lienzos grandes.
-- Coordenadas y contador de píxeles.
-- Exportar PNG.
+## 🧊 Transparencia real
+
+Desde v0.5 el vacío del lienzo es realmente transparente y ya no se representa internamente como blanco.
+
+Esto permite:
+
+- borrar píxeles dejando transparencia real;
+- exportar sprites PNG sin fondo blanco;
+- exportar spritesheets transparentes;
+- diferenciar un píxel blanco pintado de un píxel vacío;
+- preparar assets directamente para videojuegos.
+
+El lienzo y las miniaturas usan un patrón cuadriculado para mostrar visualmente la transparencia.
+
+## 💾 Sistema de proyectos
+
+La v0.5 introduce la primera base de producción persistente.
+
+Un proyecto guarda:
+
+- nombre del asset/proyecto;
+- tamaño del lienzo;
+- píxeles del sprite;
+- todos los frames de animación;
+- duración de cada frame;
+- frame actual;
+- FPS base;
+- configuración de onion skin.
+
+Opciones disponibles:
+
+- **Guardar en navegador:** usa almacenamiento local para continuar rápidamente en la misma computadora.
+- **Cargar guardado:** recupera el último proyecto guardado localmente.
+- **Exportar proyecto:** genera un archivo `.pixelstudio.json` para respaldo y transporte.
+- **Importar proyecto:** abre un archivo exportado anteriormente.
+
+Para assets importantes de RUMBO se recomienda **exportar también el archivo del proyecto**, no depender solamente del guardado del navegador.
 
 ## 🎞️ Animation Lab
-
-El Animation Lab trabaja con frames reales, cada uno con su propio estado del lienzo.
 
 Funciones actuales:
 
 - crear frame vacío;
-- duplicar el frame actual;
-- eliminar frames;
-- cambiar entre frames desde una línea de tiempo con miniaturas;
-- mover el frame actual hacia la izquierda o derecha;
-- activar/desactivar onion skin;
-- ajustar la opacidad del onion skin;
-- usar el frame anterior como referencia visual tenue;
-- asignar una duración individual en milisegundos a cada frame;
-- usar el selector de FPS como duración base rápida;
-- reproducir la animación respetando la duración de cada frame;
-- detener la reproducción;
-- conservar un dibujo diferente en cada frame;
-- exportar todos los frames como un spritesheet horizontal PNG.
-
-Esto permite empezar a construir animaciones como caminar, dormir, levantarse, sentarse, expresiones, objetos animados y transiciones simples.
-
-### Duración por frame
-
-Cada frame guarda ahora su propio `durationMs`. Por ejemplo, una animación puede usar:
-
-- Frame 1: 500 ms
-- Frame 2: 120 ms
-- Frame 3: 120 ms
-- Frame 4: 800 ms
-
-Esto permite pausas naturales sin tener que duplicar muchos frames.
-
-### Onion skin
-
-El onion skin muestra los píxeles dibujados del frame anterior sobre las zonas vacías del frame actual. Es solamente una referencia visual: **no modifica ni mezcla los píxeles reales del frame**.
-
-La opacidad puede ajustarse desde el Animation Lab.
+- duplicar/eliminar frames;
+- cambiar entre frames desde timeline con miniaturas;
+- reordenar frames;
+- onion skin;
+- opacidad de onion skin;
+- duración individual por frame;
+- reproducción por duración;
+- FPS base rápido;
+- exportar spritesheet PNG transparente.
 
 ## 🤖 AI Lab
 
@@ -96,9 +101,9 @@ El AI Lab continúa siendo un prototipo local. Contempla:
 - escenas;
 - assets de entorno.
 
-Incluye opciones para tamaño, estilo RUMBO, detalle, paleta, iluminación, perspectiva, fondo, contorno, pasos y notas adicionales.
+Incluye tamaño, preset RUMBO, detalle, paleta, iluminación, perspectiva, fondo, contorno, pasos y notas adicionales.
 
-Todavía no se llama a una IA real. La especificación estructurada será la entrada del futuro generador.
+Todavía no se conecta a una IA real. El siguiente objetivo es que la IA genere estructuras que Pixel Art Studios pueda validar y convertir directamente en sprites/tutoriales/frames.
 
 ## 🎮 Dirección para RUMBO
 
@@ -106,7 +111,7 @@ Pixel Art Studios mantiene una regla central: **todo el flujo visual será pixel
 
 El preset RUMBO servirá para mantener consistencia entre:
 
-- personajes;
+- Nicolás, Molly, Emily y otros personajes;
 - objetos;
 - habitaciones;
 - ciudades;
@@ -114,8 +119,6 @@ El preset RUMBO servirá para mantener consistencia entre:
 - animaciones;
 - efectos;
 - escenas y transiciones.
-
-Una meta importante será guardar personajes base como Nicolás, Molly y Emily para que las futuras animaciones y la IA puedan reutilizar el mismo diseño visual en todos los frames.
 
 ## ⌨️ Atajos actuales
 
@@ -126,8 +129,8 @@ Una meta importante será guardar personajes base como Nicolás, Molly y Emily p
 - `L` — línea.
 - `R` — rectángulo.
 - `O` — elipse.
-- `H` — mano/desplazamiento.
-- `Espacio` mantenido — mano temporal.
+- `H` — mover dibujo.
+- `Espacio + arrastrar` — desplazar vista.
 - `Ctrl + Z` — deshacer.
 - `Ctrl + Y` o `Ctrl + Shift + Z` — rehacer.
 
@@ -144,7 +147,8 @@ Pixel-Art-Studios/
 │   ├── canvas.js
 │   ├── tutorials.js
 │   ├── animation.js
-│   └── ai-prep.js
+│   ├── ai-prep.js
+│   └── project.js
 └── data/
     └── objects/
         └── apple.json
@@ -176,34 +180,33 @@ Pixel-Art-Studios/
 - [x] AI Lab y especificación estructurada.
 
 ### v0.4 — Producción y animación
-- [x] Añadir 12×12, 24×24, 48×48 y 64×64.
-- [x] Mantener tutoriales solo donde existe contenido específico.
-- [x] Añadir modo libre para otros tamaños.
-- [x] Añadir aclarar y oscurecer color.
-- [x] Exponer estado del lienzo para frames.
+- [x] Añadir tamaños adicionales.
 - [x] Crear Animation Lab.
-- [x] Añadir frames vacíos.
-- [x] Duplicar y eliminar frames.
-- [x] Añadir timeline con miniaturas.
-- [x] Añadir reproducción configurable por FPS.
-- [x] Exportar spritesheet horizontal.
-- [x] Ampliar AI Lab a animaciones y escenas.
+- [x] Frames, reproducción y spritesheets.
 
 ### v0.4.1 — Animación avanzada
-- [x] Añadir onion skin usando el frame anterior.
-- [x] Permitir activar/desactivar onion skin.
-- [x] Añadir control de opacidad del onion skin.
-- [x] Añadir duración individual por frame en milisegundos.
-- [x] Reproducir respetando la duración de cada frame.
-- [x] Añadir movimiento de frames hacia izquierda/derecha.
-- [x] Mostrar duración en cada miniatura del timeline.
-- [x] Mantener onion skin separado del dibujo real.
-- [x] Añadir herramienta Mano para mover el lienzo sin pintar.
-- [x] Añadir atajo `H` y mano temporal con barra espaciadora.
-- [ ] Copiar y pegar frames entre animaciones.
-- [ ] Guardar animaciones como proyectos/assets.
-- [ ] Exportar GIF/APNG.
-- [ ] Biblioteca de personajes y assets base.
+- [x] Onion skin.
+- [x] Duración individual por frame.
+- [x] Reordenamiento de frames.
+- [x] Mover dibujo completo.
+- [x] Separar mover dibujo de mover vista.
+
+### v0.5 — Base de producción para RUMBO
+- [x] Cambiar el vacío del lienzo a transparencia real.
+- [x] Diferenciar blanco pintado de transparencia.
+- [x] Exportar PNG transparente.
+- [x] Exportar spritesheet transparente.
+- [x] Adaptar onion skin a transparencia.
+- [x] Añadir sistema de proyectos.
+- [x] Guardar proyecto en navegador.
+- [x] Cargar proyecto guardado.
+- [x] Exportar proyecto como `.pixelstudio.json`.
+- [x] Importar proyecto desde archivo.
+- [x] Guardar/restaurar frames y duraciones.
+- [ ] Selección rectangular de áreas.
+- [ ] Copiar/cortar/pegar selección.
+- [ ] Biblioteca de assets base de RUMBO.
+- [ ] Carpetas/categorías para assets.
 - [ ] Conectar IA real.
 
 ## 🛠️ Tecnologías
