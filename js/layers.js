@@ -5,6 +5,8 @@ window.PixelLayers = (() => {
   let list = null;
   let nameInput = null;
   let activeLabel = null;
+  let soloActive = false;
+  let visibilityBackup = null;
 
   const style = document.createElement('style');
   style.id = 'pixelLayersStyles';
@@ -15,12 +17,14 @@ window.PixelLayers = (() => {
     .layers-toolbar { display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem; margin:.7rem 0; }
     .layers-active-label { margin:.25rem 0 .65rem; padding:.55rem .65rem; border:1px solid var(--border); background:var(--panel-2); font-size:.78rem; }
     .layers-active-label strong { color:var(--accent); }
+    .layers-solo-btn { width:100%; margin-bottom:.65rem; }
+    .layers-solo-btn.active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
     .layers-list { display:grid; gap:.45rem; }
     .layer-row { display:grid; grid-template-columns:auto 42px minmax(0,1fr) auto; align-items:center; gap:.45rem; padding:.55rem; border:1px solid var(--border); background:var(--panel-2); cursor:pointer; }
     .layer-row.active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:rgba(255,255,255,.04); }
     .layer-row.active .layer-row-name::after { content:'  · ACTIVA'; color:var(--accent); font-size:.64rem; font-weight:700; }
     .layer-thumb { width:40px; height:40px; display:grid; border:1px solid var(--border); background-color:#fff; background-image:linear-gradient(45deg,#ddd 25%,transparent 25%),linear-gradient(-45deg,#ddd 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ddd 75%),linear-gradient(-45deg,transparent 75%,#ddd 75%); background-size:8px 8px; background-position:0 0,0 4px,4px -4px,-4px 0; overflow:hidden; image-rendering:pixelated; }
-    .layer-thumb span { min-width:0; min-height:0; }
+    .layer-thumb span { display:block; min-width:0; min-height:0; }
     .layer-row-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; text-align:left; }
     .layer-row-actions { display:flex; gap:.25rem; }
     .layer-row-actions button, .layer-visibility { min-width:34px; padding:.35rem; }
@@ -35,9 +39,10 @@ window.PixelLayers = (() => {
     const thumb = document.createElement('div');
     thumb.className = 'layer-thumb';
     thumb.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    thumb.style.gridTemplateRows = `repeat(${size}, 1fr)`;
     layer.pixels.forEach(color => {
       const px = document.createElement('span');
-      px.style.background = color === 'transparent' ? 'transparent' : color;
+      px.style.background = !color || color === 'transparent' ? 'transparent' : color;
       thumb.appendChild(px);
     });
     return thumb;
@@ -45,7 +50,36 @@ window.PixelLayers = (() => {
 
   function activateLayer(id) {
     if (!window.PixelCanvas.setActiveLayer(id)) return;
+    if (soloActive) applySoloActive();
     requestAnimationFrame(render);
+  }
+
+  function applySoloActive() {
+    const data = state();
+    if (!visibilityBackup) {
+      visibilityBackup = Object.fromEntries(data.layers.map(layer => [layer.id, layer.visible]));
+    }
+    data.layers.forEach(layer => {
+      const shouldBeVisible = layer.id === data.activeLayerId;
+      if (layer.visible !== shouldBeVisible) window.PixelCanvas.toggleLayerVisibility(layer.id);
+    });
+  }
+
+  function restoreVisibility() {
+    if (!visibilityBackup) return;
+    const data = state();
+    data.layers.forEach(layer => {
+      const wanted = visibilityBackup[layer.id] !== false;
+      if (layer.visible !== wanted) window.PixelCanvas.toggleLayerVisibility(layer.id);
+    });
+    visibilityBackup = null;
+  }
+
+  function toggleSoloActive() {
+    soloActive = !soloActive;
+    if (soloActive) applySoloActive();
+    else restoreVisibility();
+    render();
   }
 
   function render() {
@@ -64,10 +98,16 @@ window.PixelLayers = (() => {
       eye.textContent = layer.visible ? '👁' : '◌';
       eye.addEventListener('click', event => {
         event.stopPropagation();
+        if (soloActive) return;
         window.PixelCanvas.toggleLayerVisibility(layer.id);
       });
 
       const thumb = buildThumb(layer, data.size);
+      thumb.title = `Contenido de ${layer.name}`;
+      thumb.addEventListener('click', event => {
+        event.stopPropagation();
+        activateLayer(layer.id);
+      });
 
       const label = document.createElement('button');
       label.type = 'button';
@@ -102,6 +142,11 @@ window.PixelLayers = (() => {
     const active = data.layers.find(layer => layer.id === data.activeLayerId);
     if (nameInput) nameInput.value = active?.name || '';
     if (activeLabel) activeLabel.innerHTML = `Editando: <strong>${active?.name || '—'}</strong>`;
+    const soloBtn = panel?.querySelector('#soloActiveLayerBtn');
+    if (soloBtn) {
+      soloBtn.classList.toggle('active', soloActive);
+      soloBtn.textContent = soloActive ? '👁 Mostrar composición completa' : '👁 Ver solo capa activa';
+    }
   }
 
   function install() {
@@ -114,6 +159,7 @@ window.PixelLayers = (() => {
     panel.innerHTML = `
       <div class="layers-panel-head"><div><p class="eyebrow">CAPAS</p><h4>Composición</h4></div><button type="button" id="addLayerBtn" title="Nueva capa">＋</button></div>
       <div id="layersActiveLabel" class="layers-active-label"></div>
+      <button type="button" id="soloActiveLayerBtn" class="layers-solo-btn">👁 Ver solo capa activa</button>
       <div class="layers-toolbar">
         <button type="button" id="duplicateLayerBtn">Duplicar</button>
         <button type="button" id="deleteLayerBtn">Eliminar</button>
@@ -121,7 +167,7 @@ window.PixelLayers = (() => {
       </div>
       <div id="layersList" class="layers-list"></div>
       <input id="activeLayerName" class="layer-name-edit" type="text" maxlength="60" aria-label="Nombre de la capa activa">
-      <p class="layers-note">Haz clic en una fila o miniatura para cambiar de capa. Todas las capas visibles se siguen viendo juntas; solo se edita la capa marcada como ACTIVA.</p>
+      <p class="layers-note">Cada miniatura muestra únicamente el contenido de esa capa. Puedes aislar la capa activa para comprobar exactamente qué contiene.</p>
     `;
     inspector.appendChild(panel);
     list = panel.querySelector('#layersList');
@@ -129,6 +175,7 @@ window.PixelLayers = (() => {
     activeLabel = panel.querySelector('#layersActiveLabel');
 
     panel.querySelector('#addLayerBtn').addEventListener('click', () => window.PixelCanvas.addLayer());
+    panel.querySelector('#soloActiveLayerBtn').addEventListener('click', toggleSoloActive);
     panel.querySelector('#duplicateLayerBtn').addEventListener('click', () => window.PixelCanvas.duplicateLayer());
     panel.querySelector('#deleteLayerBtn').addEventListener('click', () => {
       if (!window.PixelCanvas.deleteLayer()) alert('Debe quedar al menos una capa.');
@@ -149,6 +196,8 @@ window.PixelLayers = (() => {
   }
 
   window.addEventListener('pixellayerchange', render);
+  window.addEventListener('pixelhistorychange', () => requestAnimationFrame(render));
+  window.addEventListener('pixelstatechange', () => requestAnimationFrame(render));
   window.addEventListener('pixelsizechange', () => requestAnimationFrame(render));
   window.addEventListener('pixelprojectloaded', () => requestAnimationFrame(render));
 
@@ -159,5 +208,5 @@ window.PixelLayers = (() => {
     observer.observe(document.body, { childList:true, subtree:true });
   }
 
-  return { render, getState: state };
+  return { render, getState: state, toggleSoloActive };
 })();
