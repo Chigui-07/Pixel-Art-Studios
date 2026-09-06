@@ -25,6 +25,14 @@
     document.body.appendChild(script);
   }
 
+  function loadSelectionModule() {
+    if (window.PixelSelection || document.querySelector('script[data-pixel-selection]')) return;
+    const script = document.createElement("script");
+    script.src = "js/selection.js?v=0.8";
+    script.dataset.pixelSelection = "true";
+    document.body.appendChild(script);
+  }
+
   function loadWorkspaceModule() {
     if (window.PixelWorkspace || document.querySelector('script[data-pixel-workspace]')) return;
     const script = document.createElement("script");
@@ -38,6 +46,7 @@
     const script = document.createElement("script");
     script.src = "js/editor-patches.js?v=0.7.1";
     script.dataset.editorPatches = "true";
+    script.addEventListener('load', loadSelectionModule, { once:true });
     document.body.appendChild(script);
   }
 
