@@ -18,6 +18,8 @@ window.PixelAnimation = (() => {
   let onionEnabled = true;
   let onionOpacity = 0.28;
 
+  const emptyColor = () => window.PixelCanvas.getEmptyColor?.() || "transparent";
+
   function installStyles() {
     if (document.getElementById("animationProStyles")) return;
     const style = document.createElement("style");
@@ -29,18 +31,17 @@ window.PixelAnimation = (() => {
       .animation-pro-controls input[type="range"] { width:120px; accent-color:var(--accent); }
       .frame-card { position:relative; }
       .frame-card .frame-meta { color:var(--muted); font-size:.67rem; }
-      .frame-card.drag-target { border-color:var(--accent-2); }
       .pixel { position:relative; }
       .pixel.onion-pixel::after { content:""; position:absolute; inset:0; pointer-events:none; background:var(--onion-color); opacity:var(--onion-opacity,.28); }
       .onion-toggle.active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
       .timeline-help { margin:.3rem 0 0; color:var(--muted); font-size:.75rem; }
+      .frame-thumb, .pixel-canvas { background-color:#fff; background-image:linear-gradient(45deg,#ddd 25%,transparent 25%),linear-gradient(-45deg,#ddd 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ddd 75%),linear-gradient(-45deg,transparent 75%,#ddd 75%); background-size:12px 12px; background-position:0 0,0 6px,6px -6px,-6px 0; }
     `;
     document.head.appendChild(style);
   }
 
   function installControls() {
     if (!controls || document.getElementById("frameDurationInput")) return;
-
     const extra = document.createElement("div");
     extra.className = "animation-pro-controls";
     extra.innerHTML = `
@@ -58,7 +59,7 @@ window.PixelAnimation = (() => {
 
     const help = document.createElement("p");
     help.className = "timeline-help";
-    help.textContent = "El onion skin muestra el frame anterior sobre los píxeles vacíos del frame actual. Cada frame puede tener una duración diferente.";
+    help.textContent = "El onion skin muestra el frame anterior como referencia. Cada frame puede tener una duración diferente.";
     extra.insertAdjacentElement("afterend", help);
 
     document.getElementById("moveFrameLeftBtn")?.addEventListener("click", () => moveFrame(-1));
@@ -85,27 +86,16 @@ window.PixelAnimation = (() => {
 
   function updateVersionBadge() {
     const version = document.querySelector(".version");
-    if (version) version.textContent = "v0.4.1";
+    if (version) version.textContent = "v0.5";
     document.querySelectorAll(".mini-badge").forEach(badge => {
-      if (/^v0\.4$/.test(badge.textContent.trim())) badge.textContent = "v0.4.1";
+      if (/^v0\.4(\.1)?$/.test(badge.textContent.trim())) badge.textContent = "v0.5";
     });
   }
 
-  function defaultDuration() {
-    return Math.round(1000 / Number(fpsSelect?.value || 6));
-  }
-
-  function cloneState(state) {
-    return { size: state.size, pixels: [...state.pixels] };
-  }
-
-  function makeFrame(state) {
-    return { state: cloneState(state), durationMs: defaultDuration() };
-  }
-
-  function blankState(size) {
-    return { size, pixels: new Array(size * size).fill("#ffffff") };
-  }
+  function defaultDuration() { return Math.round(1000 / Number(fpsSelect?.value || 6)); }
+  function cloneState(state) { return { size: state.size, pixels: [...state.pixels] }; }
+  function makeFrame(state, durationMs = defaultDuration()) { return { state: cloneState(state), durationMs }; }
+  function blankState(size) { return { size, pixels: new Array(size * size).fill(emptyColor()) }; }
 
   function saveCurrent() {
     if (!frames[currentIndex] || isPlaying) return;
@@ -124,15 +114,15 @@ window.PixelAnimation = (() => {
   function renderOnionSkin() {
     clearOnionSkin();
     if (!onionEnabled || isPlaying || currentIndex <= 0 || !pixelCanvas) return;
-
     const previous = frames[currentIndex - 1]?.state;
     const current = frames[currentIndex]?.state;
     if (!previous || !current || previous.size !== current.size) return;
+    const empty = emptyColor();
 
     [...pixelCanvas.children].forEach((pixel, index) => {
-      const currentColor = current.pixels[index]?.toLowerCase();
-      const previousColor = previous.pixels[index]?.toLowerCase();
-      if ((currentColor === "#ffffff" || !currentColor) && previousColor && previousColor !== "#ffffff") {
+      const currentColor = (current.pixels[index] || empty).toLowerCase();
+      const previousColor = (previous.pixels[index] || empty).toLowerCase();
+      if (currentColor === empty && previousColor !== empty) {
         pixel.classList.add("onion-pixel");
         pixel.style.setProperty("--onion-color", previousColor);
         pixel.style.setProperty("--onion-opacity", String(onionOpacity));
@@ -163,7 +153,7 @@ window.PixelAnimation = (() => {
     thumb.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
     pixels.forEach(color => {
       const px = document.createElement("span");
-      px.style.background = color;
+      px.style.background = color === emptyColor() ? "transparent" : color;
       thumb.appendChild(px);
     });
     return thumb;
@@ -177,16 +167,13 @@ window.PixelAnimation = (() => {
       button.type = "button";
       button.className = `frame-card${index === currentIndex ? " active" : ""}`;
       button.appendChild(makeThumb(frame));
-
       const label = document.createElement("span");
       label.textContent = `Frame ${index + 1}`;
       button.appendChild(label);
-
       const meta = document.createElement("span");
       meta.className = "frame-meta";
       meta.textContent = `${frame.durationMs} ms`;
       button.appendChild(meta);
-
       button.addEventListener("click", () => loadFrame(index));
       timeline.appendChild(button);
     });
@@ -201,7 +188,6 @@ window.PixelAnimation = (() => {
     addBtn.disabled = isPlaying;
     stopBtn.disabled = !isPlaying;
     playBtn.disabled = isPlaying || frames.length < 2;
-
     const left = document.getElementById("moveFrameLeftBtn");
     const right = document.getElementById("moveFrameRightBtn");
     if (left) left.disabled = currentIndex <= 0 || isPlaying;
@@ -214,23 +200,17 @@ window.PixelAnimation = (() => {
     frames.splice(currentIndex + 1, 0, makeFrame(blankState(size)));
     currentIndex++;
     window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    renderOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
   }
 
   function duplicateFrame() {
     saveCurrent();
     const source = frames[currentIndex];
-    const copy = { state: cloneState(source.state), durationMs: source.durationMs };
+    const copy = makeFrame(source.state, source.durationMs);
     frames.splice(currentIndex + 1, 0, copy);
     currentIndex++;
     window.PixelCanvas.loadState(cloneState(copy.state));
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    renderOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
   }
 
   function deleteFrame() {
@@ -238,10 +218,7 @@ window.PixelAnimation = (() => {
     frames.splice(currentIndex, 1);
     currentIndex = Math.min(currentIndex, frames.length - 1);
     window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    renderOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
   }
 
   function moveFrame(direction) {
@@ -251,10 +228,7 @@ window.PixelAnimation = (() => {
     if (target < 0 || target >= frames.length) return;
     [frames[currentIndex], frames[target]] = [frames[target], frames[currentIndex]];
     currentIndex = target;
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    renderOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
   }
 
   function playFrame(index) {
@@ -262,81 +236,90 @@ window.PixelAnimation = (() => {
     currentIndex = index;
     clearOnionSkin();
     window.PixelCanvas.loadState(cloneState(frames[index].state), { resetHistory: false });
-    renderTimeline();
-    updateStatus();
-
-    timer = setTimeout(() => {
-      playFrame((index + 1) % frames.length);
-    }, Math.max(40, frames[index].durationMs || defaultDuration()));
+    renderTimeline(); updateStatus();
+    timer = setTimeout(() => playFrame((index + 1) % frames.length), Math.max(40, frames[index].durationMs || defaultDuration()));
   }
 
   function play() {
     if (frames.length < 2 || isPlaying) return;
-    saveCurrent();
-    isPlaying = true;
-    updateStatus();
-    playFrame(currentIndex);
+    saveCurrent(); isPlaying = true; updateStatus(); playFrame(currentIndex);
   }
 
   function stop() {
     if (!isPlaying) return;
-    clearTimeout(timer);
-    timer = null;
-    isPlaying = false;
+    clearTimeout(timer); timer = null; isPlaying = false;
     window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    renderOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
   }
 
   function exportSpriteSheet() {
     saveCurrent();
     const size = frames[0].state.size;
     if (!frames.every(frame => frame.state.size === size)) return;
-
     const sheet = document.createElement("canvas");
     sheet.width = size * frames.length;
     sheet.height = size;
     const ctx = sheet.getContext("2d");
     ctx.imageSmoothingEnabled = false;
+    const empty = emptyColor();
 
     frames.forEach((frame, frameIndex) => {
       frame.state.pixels.forEach((color, pixelIndex) => {
+        if (!color || color === empty) return;
         ctx.fillStyle = color;
-        ctx.fillRect(
-          frameIndex * size + (pixelIndex % size),
-          Math.floor(pixelIndex / size),
-          1,
-          1
-        );
+        ctx.fillRect(frameIndex * size + (pixelIndex % size), Math.floor(pixelIndex / size), 1, 1);
       });
     });
 
     const link = document.createElement("a");
     link.download = `spritesheet-${size}x${size}-${frames.length}frames.png`;
     link.href = sheet.toDataURL("image/png");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    document.body.appendChild(link); link.click(); link.remove();
   }
 
   function resetForSize(size) {
     if (isPlaying) stop();
     frames = [makeFrame(blankState(Number(size)))];
     currentIndex = 0;
-    renderTimeline();
-    updateStatus();
-    updateDurationControl();
-    clearOnionSkin();
+    renderTimeline(); updateStatus(); updateDurationControl(); clearOnionSkin();
   }
 
   function syncCurrentFrame() {
     if (!isPlaying && frames[currentIndex]) {
       frames[currentIndex].state = cloneState(window.PixelCanvas.getState());
-      renderTimeline();
-      renderOnionSkin();
+      renderTimeline(); renderOnionSkin();
     }
+  }
+
+  function getProjectState() {
+    saveCurrent();
+    return {
+      frames: frames.map(frame => ({ state: cloneState(frame.state), durationMs: frame.durationMs })),
+      currentIndex,
+      fps: Number(fpsSelect?.value || 6),
+      onionEnabled,
+      onionOpacity
+    };
+  }
+
+  function loadProjectState(data) {
+    if (!data || !Array.isArray(data.frames) || !data.frames.length) return false;
+    if (isPlaying) stop();
+    frames = data.frames.map(frame => makeFrame(frame.state, Math.max(40, Number(frame.durationMs) || defaultDuration())));
+    currentIndex = Math.max(0, Math.min(frames.length - 1, Number(data.currentIndex) || 0));
+    if (fpsSelect && data.fps) fpsSelect.value = String(data.fps);
+    onionEnabled = data.onionEnabled !== false;
+    onionOpacity = Number.isFinite(Number(data.onionOpacity)) ? Number(data.onionOpacity) : 0.28;
+    const onionBtn = document.getElementById("onionToggleBtn");
+    if (onionBtn) {
+      onionBtn.classList.toggle("active", onionEnabled);
+      onionBtn.textContent = onionEnabled ? "🧅 Onion skin" : "🧅 Onion apagado";
+    }
+    const opacityInput = document.getElementById("onionOpacityInput");
+    if (opacityInput) opacityInput.value = String(Math.round(onionOpacity * 100));
+    window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
+    renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
+    return true;
   }
 
   addBtn?.addEventListener("click", addFrame);
@@ -349,36 +332,23 @@ window.PixelAnimation = (() => {
     const nextDefault = defaultDuration();
     if (frames[currentIndex]) {
       frames[currentIndex].durationMs = nextDefault;
-      updateDurationControl();
-      renderTimeline();
-      updateStatus();
+      updateDurationControl(); renderTimeline(); updateStatus();
     }
   });
 
   window.addEventListener("pixelhistorychange", syncCurrentFrame);
-  window.addEventListener("pixelstatechange", () => {
-    if (!isPlaying) syncCurrentFrame();
-  });
+  window.addEventListener("pixelstatechange", () => { if (!isPlaying) syncCurrentFrame(); });
   window.addEventListener("pixelsizechange", event => resetForSize(event.detail.size));
 
   installStyles();
   installControls();
   updateVersionBadge();
   frames = [makeFrame(window.PixelCanvas.getState())];
-  renderTimeline();
-  updateStatus();
-  updateDurationControl();
-  renderOnionSkin();
+  renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
 
   return {
-    addFrame,
-    duplicateFrame,
-    deleteFrame,
-    moveFrame,
-    play,
-    stop,
-    exportSpriteSheet,
-    resetForSize,
-    getFrames: () => frames.map(frame => ({ state: cloneState(frame.state), durationMs: frame.durationMs }))
+    addFrame, duplicateFrame, deleteFrame, moveFrame, play, stop, exportSpriteSheet, resetForSize,
+    getFrames: () => frames.map(frame => ({ state: cloneState(frame.state), durationMs: frame.durationMs })),
+    getProjectState, loadProjectState
   };
 })();
