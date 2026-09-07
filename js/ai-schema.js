@@ -23,11 +23,31 @@ Para estilo RUMBO usa contorno oscuro suave, luz superior izquierda, detalle med
 Un asset estático usa exactamente 1 frame. Una animación usa 2 o más frames con tamaño, paleta, proporciones y diseño consistentes.
 No devuelvas markdown, comentarios ni texto fuera del JSON.`;
 
+  function hslToHex(value) {
+    const match = String(value).trim().match(/^hsl\(\s*([\d.]+)(?:deg)?[ ,]+([\d.]+)%[ ,]+([\d.]+)%\s*\)$/i);
+    if (!match) return null;
+    let h = ((Number(match[1]) % 360) + 360) % 360;
+    const s = Math.max(0, Math.min(100, Number(match[2]))) / 100;
+    const l = Math.max(0, Math.min(100, Number(match[3]))) / 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) [r,g,b] = [c,x,0];
+    else if (h < 120) [r,g,b] = [x,c,0];
+    else if (h < 180) [r,g,b] = [0,c,x];
+    else if (h < 240) [r,g,b] = [0,x,c];
+    else if (h < 300) [r,g,b] = [x,0,c];
+    else [r,g,b] = [c,0,x];
+    const hex = n => Math.round((n + m) * 255).toString(16).padStart(2,"0");
+    return `#${hex(r)}${hex(g)}${hex(b)}`;
+  }
+
   function normalizeHex(value) {
     if (String(value).toLowerCase() === "transparent") return "transparent";
-    const hex = String(value || "").trim();
-    if (/^#[0-9a-f]{6}$/i.test(hex)) return hex.toLowerCase();
-    return null;
+    const raw = String(value || "").trim();
+    if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+    return hslToHex(raw);
   }
 
   function validate(asset) {
@@ -48,6 +68,7 @@ No devuelvas markdown, comentarios ni texto fuera del JSON.`;
       ids.add(entry?.id);
       const normalized = normalizeHex(entry?.hex);
       if (!normalized) errors.push(`Color inválido en palette: ${entry?.id || "sin id"}.`);
+      else entry.hex = normalized;
       if (entry?.id === "T" && normalized === "transparent") transparentFound = true;
     }
     if (!transparentFound) errors.push("La paleta debe incluir T = transparent.");
@@ -92,8 +113,8 @@ No devuelvas markdown, comentarios ni texto fuera del JSON.`;
     if (!checked.ok) throw new Error(checked.errors[0]);
     const size = Number(asset.canvas.width);
     return {
-      frames: asset.frames.map(frame => ({
-        state: { size, pixels: frameToFlat(asset, asset.frames.indexOf(frame)) },
+      frames: asset.frames.map((frame, index) => ({
+        state: { size, pixels: frameToFlat(asset, index) },
         durationMs: Number(frame.durationMs)
       })),
       currentIndex: 0,
