@@ -58,6 +58,7 @@
     .ai-preview-empty { color:var(--muted); text-align:center; line-height:1.6; padding:2rem; }
     .ai-palette-preview { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.85rem; }
     .ai-palette-chip { width:28px; height:28px; border:1px solid rgba(255,255,255,.2); }
+    .ai-frame-badge { display:inline-block; margin-top:.65rem; padding:.35rem .5rem; border:1px solid var(--border); color:var(--accent); font-size:.72rem; }
 
     .workspace-secondary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-top:1.25rem; }
     .workspace-secondary-card { padding:1.15rem; text-align:left; color:var(--text); }
@@ -159,17 +160,20 @@
       <section class="ai-create-card">
         <p class="eyebrow">PIXEL ART AI STUDIO</p>
         <h2>Dime qué quieres crear.</h2>
-        <p>Describe el objeto como quieras. El estudio lo convertirá en datos de píxeles editables y después podrás retocarlo en el editor.</p>
+        <p>Describe un sprite o una animación. El resultado usa un formato universal de píxeles y frames para que siga siendo completamente editable.</p>
 
         <label class="ai-prompt-label">Descripción
-          <textarea id="aiHomePrompt" class="ai-prompt-box" placeholder="Ej. Una cama de madera 32x32 para RUMBO, vista frontal, con sábanas azules."></textarea>
+          <textarea id="aiHomePrompt" class="ai-prompt-box" placeholder="Ej. Una cama de madera 32x32 para RUMBO con sábanas azules, o una lámpara parpadeando en 4 frames."></textarea>
         </label>
 
         <div class="ai-simple-options">
           <label>Tamaño
             <select id="aiHomeSize">
               <option value="auto" selected>Automático</option>
+              <option value="8">8 × 8</option>
+              <option value="12">12 × 12</option>
               <option value="16">16 × 16</option>
+              <option value="24">24 × 24</option>
               <option value="32">32 × 32</option>
               <option value="48">48 × 48</option>
               <option value="64">64 × 64</option>
@@ -181,6 +185,8 @@
               <option value="character">Personaje</option>
               <option value="tile">Tile</option>
               <option value="scene">Escena</option>
+              <option value="effect">Efecto</option>
+              <option value="animation">Animación</option>
             </select>
           </label>
           <label>Estilo
@@ -197,7 +203,7 @@
           <button id="aiHomeOpenEditor" type="button" disabled>🎨 Abrir en editor</button>
         </div>
         <div id="aiHomeStatus" class="ai-status">Describe una idea para comenzar.</div>
-        <p class="ai-generator-note">Ahora usamos un generador local de prueba para validar el flujo texto → píxeles. La IA real reemplazará este motor sin cambiar el editor.</p>
+        <p class="ai-generator-note">Motor universal v1: objetos y animaciones usan el mismo esquema. El generador local sigue siendo provisional; el formato ya está preparado para reemplazarlo por IA real.</p>
       </section>
 
       <aside class="ai-preview-card">
@@ -208,6 +214,7 @@
           <div id="aiPixelPreviewEmpty" class="ai-preview-empty">🤖<br>Escribe lo que quieres crear y pulsa <strong>Generar pixel art</strong>.</div>
           <div id="aiPixelPreview" class="ai-pixel-preview" hidden></div>
         </div>
+        <div id="aiFrameBadge" class="ai-frame-badge" hidden></div>
         <div id="aiPalettePreview" class="ai-palette-preview"></div>
       </aside>
     </div>
@@ -225,8 +232,8 @@
   library.className = 'workspace-library';
   library.hidden = true;
   library.innerHTML = `
-    <div class="workspace-hero"><p class="eyebrow">BIBLIOTECA</p><h2>Assets de RUMBO</h2><p>Aquí guardaremos objetos, personajes, tiles y, más adelante, animaciones generadas o editadas en Pixel Art AI Studio.</p></div>
-    <div class="empty-library">📚 La biblioteca todavía está vacía. Primero dejaremos estable la generación desde texto.</div>
+    <div class="workspace-hero"><p class="eyebrow">BIBLIOTECA</p><h2>Assets de RUMBO</h2><p>Aquí guardaremos objetos, personajes, tiles, efectos y animaciones generadas o editadas en Pixel Art AI Studio.</p></div>
+    <div class="empty-library">📚 La biblioteca todavía está vacía. El formato universal ya permite almacenar sprites y animaciones de la misma manera.</div>
   `;
   home.insertAdjacentElement('afterend', library);
 
@@ -272,29 +279,39 @@
     if (mode !== 'home') window.scrollTo({ top:0, behavior:'smooth' });
   }
 
-  function renderAIPreview(result) {
+  function renderAIPreview(asset) {
     const preview = document.getElementById('aiPixelPreview');
     const empty = document.getElementById('aiPixelPreviewEmpty');
     const title = document.getElementById('aiPreviewTitle');
     const meta = document.getElementById('aiPreviewMeta');
     const palette = document.getElementById('aiPalettePreview');
-    if (!preview || !result) return;
-    title.textContent = result.name;
-    meta.textContent = `${result.size}×${result.size} · ${result.type} · ${result.style} · píxeles editables`;
+    const frameBadge = document.getElementById('aiFrameBadge');
+    if (!preview || !asset) return;
+
+    const size = Number(asset.canvas.width);
+    const flat = window.PixelAISchema.frameToFlat(asset,0);
+    title.textContent = asset.name;
+    meta.textContent = `${size}×${size} · ${asset.assetType} · ${asset.style.profile} · editable`;
     preview.innerHTML = '';
-    preview.style.gridTemplateColumns = `repeat(${result.size},1fr)`;
-    preview.style.gridTemplateRows = `repeat(${result.size},1fr)`;
-    result.pixels.forEach(color => {
+    preview.style.gridTemplateColumns = `repeat(${size},1fr)`;
+    preview.style.gridTemplateRows = `repeat(${size},1fr)`;
+    flat.forEach(color => {
       const px = document.createElement('span');
       px.style.background = color === 'transparent' ? 'transparent' : color;
       preview.appendChild(px);
     });
     empty.hidden = true;
     preview.hidden = false;
+
+    frameBadge.hidden = false;
+    frameBadge.textContent = asset.frames.length === 1 ? '1 frame · sprite estático' : `${asset.frames.length} frames · animación`;
+
     palette.innerHTML = '';
-    result.palette.forEach(color => {
+    asset.palette.filter(entry => entry.hex !== 'transparent').forEach(entry => {
       const chip = document.createElement('span');
-      chip.className = 'ai-palette-chip'; chip.style.background = color; chip.title = color;
+      chip.className = 'ai-palette-chip';
+      chip.style.background = entry.hex;
+      chip.title = `${entry.id} · ${entry.role} · ${entry.hex}`;
       palette.appendChild(chip);
     });
   }
@@ -303,7 +320,7 @@
     const prompt = document.getElementById('aiHomePrompt')?.value.trim();
     const status = document.getElementById('aiHomeStatus');
     if (!prompt) { status.textContent = 'Escribe primero qué quieres crear.'; return; }
-    if (!window.PixelAIGenerator) { status.textContent = 'El motor de generación todavía está cargando. Intenta de nuevo en un segundo.'; return; }
+    if (!window.PixelAIGenerator || !window.PixelAISchema) { status.textContent = 'El motor todavía está cargando.'; return; }
     try {
       latestAIResult = window.PixelAIGenerator.generate({
         prompt,
@@ -311,13 +328,28 @@
         type: document.getElementById('aiHomeType')?.value || 'object',
         style: document.getElementById('aiHomeStyle')?.value || 'rumbo'
       });
+      const checked = window.PixelAISchema.validate(latestAIResult);
+      if (!checked.ok) throw new Error(checked.errors[0]);
       window.PixelProject?.newProject?.();
-      window.PixelAIGenerator.apply(latestAIResult);
       renderAIPreview(latestAIResult);
       document.getElementById('aiHomeOpenEditor').disabled = false;
-      status.textContent = `Listo: ${latestAIResult.size}×${latestAIResult.size}. Puedes abrirlo en el editor.`;
+      const size = latestAIResult.canvas.width;
+      const frames = latestAIResult.frames.length;
+      status.textContent = `Listo: ${size}×${size} · ${frames} frame${frames===1?'':'s'}. Abre el editor para retocarlo.`;
     } catch (error) {
       status.textContent = error.message || 'No se pudo generar.';
+    }
+  }
+
+  function openGeneratedAsset() {
+    if (!latestAIResult) return;
+    try {
+      window.PixelAIGenerator.apply(latestAIResult);
+      setMode('editor');
+      if (latestAIResult.assetType === 'animation') toggleAnimation(true);
+      refreshProjectInfo(latestAIResult.assetType === 'animation' ? 'Animación generada' : 'Sprite generado');
+    } catch (error) {
+      document.getElementById('aiHomeStatus').textContent = error.message || 'No se pudo abrir en el editor.';
     }
   }
 
@@ -332,6 +364,7 @@
     document.getElementById('aiPixelPreview').innerHTML = '';
     document.getElementById('aiPixelPreviewEmpty').hidden = false;
     document.getElementById('aiPalettePreview').innerHTML = '';
+    document.getElementById('aiFrameBadge').hidden = true;
   }
 
   function toggleAnimation(force) {
@@ -385,7 +418,7 @@
 
   document.getElementById('aiHomeGenerate')?.addEventListener('click', generateFromPrompt);
   document.getElementById('aiHomeClear')?.addEventListener('click', clearAIHome);
-  document.getElementById('aiHomeOpenEditor')?.addEventListener('click', () => { if (latestAIResult) { setMode('editor'); refreshProjectInfo('Generado con IA local'); } });
+  document.getElementById('aiHomeOpenEditor')?.addEventListener('click', openGeneratedAsset);
   document.getElementById('aiHomePrompt')?.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') generateFromPrompt(); });
 
   document.addEventListener('click', event => {
@@ -404,8 +437,8 @@
   modalBackdrop.addEventListener('click', event => { if (event.target === modalBackdrop) closeModal(); });
   window.addEventListener('pixelprojectchange', () => refreshProjectInfo());
 
-  document.querySelector('.topbar h1')?.replaceChildren(document.createTextNode('Describe. Genera. Edita.'));
-  document.querySelector('.version')?.replaceChildren(document.createTextNode('v1.0 AI flow'));
+  document.querySelector('.topbar h1')?.replaceChildren(document.createTextNode('Describe. Genera. Edita. Anima.'));
+  document.querySelector('.version')?.replaceChildren(document.createTextNode('v1.1 universal assets'));
   setMode('home');
   refreshProjectInfo();
 
