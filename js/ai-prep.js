@@ -17,35 +17,39 @@
   }
 
   function loadSelectionHotkeys() {
-    loadScript("js/selection-hotkeys.js?v=1.0-ai.1", "data-pixel-selection-hotkeys");
+    loadScript("js/selection-hotkeys.js?v=1.1-ai", "data-pixel-selection-hotkeys");
   }
 
   function loadSelectionModule() {
     if (window.PixelSelection) return loadSelectionHotkeys();
-    loadScript("js/selection.js?v=1.0-ai.1", "data-pixel-selection", loadSelectionHotkeys);
+    loadScript("js/selection.js?v=1.1-ai", "data-pixel-selection", loadSelectionHotkeys);
   }
 
   function loadEditorExtras() {
-    loadScript("js/editor-patches.js?v=1.0-ai.1", "data-editor-patches", loadSelectionModule);
-    loadScript("js/shape-preview.js?v=1.0-ai.1", "data-shape-preview");
+    loadScript("js/editor-patches.js?v=1.1-ai", "data-editor-patches", loadSelectionModule);
+    loadScript("js/shape-preview.js?v=1.1-ai", "data-shape-preview");
   }
 
   function loadWorkspace() {
     if (window.PixelWorkspace) return loadEditorExtras();
-    loadScript("js/workspace.js?v=1.0-ai.1", "data-pixel-workspace", loadEditorExtras);
+    loadScript("js/workspace.js?v=1.1-ai", "data-pixel-workspace", loadEditorExtras);
   }
 
   function loadAIGenerator() {
     if (window.PixelAIGenerator) return loadWorkspace();
-    loadScript("js/ai-generator.js?v=1.0-ai.1", "data-pixel-ai-generator", loadWorkspace);
+    loadScript("js/ai-generator.js?v=1.1-ai", "data-pixel-ai-generator", loadWorkspace);
+  }
+
+  function loadAISchema() {
+    if (window.PixelAISchema) return loadAIGenerator();
+    loadScript("js/ai-schema.js?v=1.1-ai", "data-pixel-ai-schema", loadAIGenerator);
   }
 
   function loadProject() {
-    if (window.PixelProject) return loadAIGenerator();
-    loadScript("js/project.js?v=1.0-ai.1", "data-pixel-project", loadAIGenerator);
+    if (window.PixelProject) return loadAISchema();
+    loadScript("js/project.js?v=1.1-ai", "data-pixel-project", loadAISchema);
   }
 
-  // Flujo crítico en orden fijo: proyecto -> generador -> interfaz.
-  // Así el menú nunca se inicializa antes de que el motor de generación exista.
+  // Flujo crítico: proyecto -> esquema universal -> generador -> interfaz.
   loadProject();
 })();
