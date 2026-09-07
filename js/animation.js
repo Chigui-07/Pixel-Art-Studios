@@ -17,6 +17,7 @@ window.PixelAnimation = (() => {
   let isPlaying = false;
   let onionEnabled = true;
   let onionOpacity = 0.28;
+  let restoringProject = false;
 
   const emptyColor = () => window.PixelCanvas.getEmptyColor?.() || "transparent";
 
@@ -98,7 +99,7 @@ window.PixelAnimation = (() => {
   function blankState(size) { return { size, pixels: new Array(size * size).fill(emptyColor()) }; }
 
   function saveCurrent() {
-    if (!frames[currentIndex] || isPlaying) return;
+    if (!frames[currentIndex] || isPlaying || restoringProject) return;
     frames[currentIndex].state = cloneState(window.PixelCanvas.getState());
   }
 
@@ -151,6 +152,7 @@ window.PixelAnimation = (() => {
     thumb.className = "frame-thumb";
     const { size, pixels } = frame.state;
     thumb.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    thumb.style.gridTemplateRows = `repeat(${size}, 1fr)`;
     pixels.forEach(color => {
       const px = document.createElement("span");
       px.style.background = color === emptyColor() ? "transparent" : color;
@@ -278,6 +280,7 @@ window.PixelAnimation = (() => {
   }
 
   function resetForSize(size) {
+    if (restoringProject) return;
     if (isPlaying) stop();
     frames = [makeFrame(blankState(Number(size)))];
     currentIndex = 0;
@@ -285,7 +288,7 @@ window.PixelAnimation = (() => {
   }
 
   function syncCurrentFrame() {
-    if (!isPlaying && frames[currentIndex]) {
+    if (!restoringProject && !isPlaying && frames[currentIndex]) {
       frames[currentIndex].state = cloneState(window.PixelCanvas.getState());
       renderTimeline(); renderOnionSkin();
     }
@@ -305,19 +308,24 @@ window.PixelAnimation = (() => {
   function loadProjectState(data) {
     if (!data || !Array.isArray(data.frames) || !data.frames.length) return false;
     if (isPlaying) stop();
-    frames = data.frames.map(frame => makeFrame(frame.state, Math.max(40, Number(frame.durationMs) || defaultDuration())));
-    currentIndex = Math.max(0, Math.min(frames.length - 1, Number(data.currentIndex) || 0));
-    if (fpsSelect && data.fps) fpsSelect.value = String(data.fps);
-    onionEnabled = data.onionEnabled !== false;
-    onionOpacity = Number.isFinite(Number(data.onionOpacity)) ? Number(data.onionOpacity) : 0.28;
-    const onionBtn = document.getElementById("onionToggleBtn");
-    if (onionBtn) {
-      onionBtn.classList.toggle("active", onionEnabled);
-      onionBtn.textContent = onionEnabled ? "🧅 Onion skin" : "🧅 Onion apagado";
+    restoringProject = true;
+    try {
+      frames = data.frames.map(frame => makeFrame(frame.state, Math.max(40, Number(frame.durationMs) || defaultDuration())));
+      currentIndex = Math.max(0, Math.min(frames.length - 1, Number(data.currentIndex) || 0));
+      if (fpsSelect && data.fps) fpsSelect.value = String(data.fps);
+      onionEnabled = data.onionEnabled !== false;
+      onionOpacity = Number.isFinite(Number(data.onionOpacity)) ? Number(data.onionOpacity) : 0.28;
+      const onionBtn = document.getElementById("onionToggleBtn");
+      if (onionBtn) {
+        onionBtn.classList.toggle("active", onionEnabled);
+        onionBtn.textContent = onionEnabled ? "🧅 Onion skin" : "🧅 Onion apagado";
+      }
+      const opacityInput = document.getElementById("onionOpacityInput");
+      if (opacityInput) opacityInput.value = String(Math.round(onionOpacity * 100));
+      window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
+    } finally {
+      restoringProject = false;
     }
-    const opacityInput = document.getElementById("onionOpacityInput");
-    if (opacityInput) opacityInput.value = String(Math.round(onionOpacity * 100));
-    window.PixelCanvas.loadState(cloneState(frames[currentIndex].state));
     renderTimeline(); updateStatus(); updateDurationControl(); renderOnionSkin();
     return true;
   }
@@ -337,8 +345,8 @@ window.PixelAnimation = (() => {
   });
 
   window.addEventListener("pixelhistorychange", syncCurrentFrame);
-  window.addEventListener("pixelstatechange", () => { if (!isPlaying) syncCurrentFrame(); });
-  window.addEventListener("pixelsizechange", event => resetForSize(event.detail.size));
+  window.addEventListener("pixelstatechange", syncCurrentFrame);
+  window.addEventListener("pixelsizechange", event => { if (!restoringProject) resetForSize(event.detail.size); });
 
   installStyles();
   installControls();
