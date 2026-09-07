@@ -1,205 +1,51 @@
 (() => {
-  const objectInput = document.getElementById("aiObject");
-  const categorySelect = document.getElementById("aiCategory");
-  const sizeSelect = document.getElementById("aiSize");
-  const styleSelect = document.getElementById("aiStyle");
-  const detailSelect = document.getElementById("aiDetail");
-  const paletteSelect = document.getElementById("aiPalette");
-  const lightingSelect = document.getElementById("aiLighting");
-  const perspectiveSelect = document.getElementById("aiPerspective");
-  const backgroundSelect = document.getElementById("aiBackground");
-  const outlineSelect = document.getElementById("aiOutline");
-  const stepsSelect = document.getElementById("aiSteps");
-  const notesInput = document.getElementById("aiNotes");
-  const generateBtn = document.getElementById("aiGenerateBtn");
-  const applyBtn = document.getElementById("aiApplyBtn");
-  const copyBtn = document.getElementById("aiCopyBtn");
-  const output = document.getElementById("aiOutput");
-  const state = document.getElementById("aiState");
+  function loadScript(src, flag, onload) {
+    if (document.querySelector(`script[${flag}]`)) return;
+    const script = document.createElement("script");
+    script.src = src;
+    script.setAttribute(flag, "true");
+    if (onload) script.addEventListener("load", onload, { once:true });
+    document.body.appendChild(script);
+  }
 
   function loadProjectModule() {
-    if (window.PixelProject || document.querySelector('script[data-pixel-project]')) return;
-    const script = document.createElement("script");
-    script.src = "js/project.js?v=0.9";
-    script.dataset.pixelProject = "true";
-    document.body.appendChild(script);
-  }
-
-  function loadLayersModule() {
-    if (window.PixelLayers || document.querySelector('script[data-pixel-layers]')) return;
-    const script = document.createElement("script");
-    script.src = "js/layers.js?v=0.9.2";
-    script.dataset.pixelLayers = "true";
-    document.body.appendChild(script);
-  }
-
-  function loadAnimationLayerBridge() {
-    if (document.querySelector('script[data-animation-layer-bridge]')) return;
-    const script = document.createElement("script");
-    script.src = "js/animation-layer-bridge.js?v=0.9";
-    script.dataset.animationLayerBridge = "true";
-    document.body.appendChild(script);
+    if (window.PixelProject) return;
+    loadScript("js/project.js?v=1.0-ai", "data-pixel-project");
   }
 
   function loadSelectionHotkeys() {
-    if (document.querySelector('script[data-pixel-selection-hotkeys]')) return;
-    const script = document.createElement("script");
-    script.src = "js/selection-hotkeys.js?v=0.8.2";
-    script.dataset.pixelSelectionHotkeys = "true";
-    document.body.appendChild(script);
+    loadScript("js/selection-hotkeys.js?v=1.0-ai", "data-pixel-selection-hotkeys");
   }
 
   function loadSelectionModule() {
-    if (window.PixelSelection || document.querySelector('script[data-pixel-selection]')) {
-      loadSelectionHotkeys();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "js/selection.js?v=0.9";
-    script.dataset.pixelSelection = "true";
-    script.addEventListener('load', loadSelectionHotkeys, { once:true });
-    document.body.appendChild(script);
+    if (window.PixelSelection) return loadSelectionHotkeys();
+    loadScript("js/selection.js?v=1.0-ai", "data-pixel-selection", loadSelectionHotkeys);
   }
 
   function loadWorkspaceModule() {
-    if (window.PixelWorkspace || document.querySelector('script[data-pixel-workspace]')) return;
-    const script = document.createElement("script");
-    script.src = "js/workspace.js?v=0.7";
-    script.dataset.pixelWorkspace = "true";
-    document.body.appendChild(script);
+    if (window.PixelWorkspace) return;
+    loadScript("js/workspace.js?v=1.0-ai", "data-pixel-workspace");
   }
 
   function loadEditorPatches() {
-    if (document.querySelector('script[data-editor-patches]')) return;
-    const script = document.createElement("script");
-    script.src = "js/editor-patches.js?v=0.7.1";
-    script.dataset.editorPatches = "true";
-    script.addEventListener('load', loadSelectionModule, { once:true });
-    document.body.appendChild(script);
+    loadScript("js/editor-patches.js?v=1.0-ai", "data-editor-patches", loadSelectionModule);
   }
 
   function loadShapePreview() {
-    if (document.querySelector('script[data-shape-preview]')) return;
-    const script = document.createElement("script");
-    script.src = "js/shape-preview.js?v=0.9.1";
-    script.dataset.shapePreview = "true";
-    document.body.appendChild(script);
+    loadScript("js/shape-preview.js?v=1.0-ai", "data-shape-preview");
+  }
+
+  function loadAIGenerator() {
+    if (window.PixelAIGenerator) return;
+    loadScript("js/ai-generator.js?v=1.0-ai", "data-pixel-ai-generator");
   }
 
   loadProjectModule();
+  loadAIGenerator();
   loadWorkspaceModule();
   loadEditorPatches();
-  loadLayersModule();
-  loadAnimationLayerBridge();
   loadShapePreview();
-  if (!generateBtn) return;
 
-  let latestSpec = null;
-
-  const presets = {
-    manzana: { category: "food", style: "classic", palette: "warm", perspective: "front" },
-    espada: { category: "item", style: "rpg", palette: "metal", perspective: "diagonal" },
-    arbol: { category: "nature", style: "rpg", palette: "natural", perspective: "front" },
-    árbol: { category: "nature", style: "rpg", palette: "natural", perspective: "front" },
-    cofre: { category: "item", style: "rpg", palette: "warm", perspective: "three-quarter" },
-    casa: { category: "building", style: "rpg", palette: "natural", perspective: "three-quarter" },
-    personaje: { category: "character", style: "rumbo", palette: "balanced", perspective: "front" },
-    animación: { category: "animation", style: "rumbo", palette: "balanced", perspective: "front" },
-    animacion: { category: "animation", style: "rumbo", palette: "balanced", perspective: "front" }
-  };
-
-  function normalizedObject() { return objectInput.value.trim(); }
-
-  function suggestPreset() {
-    const key = normalizedObject().toLowerCase();
-    const match = Object.keys(presets).find(name => key.includes(name));
-    if (!match) return;
-    const preset = presets[match];
-    categorySelect.value = preset.category;
-    styleSelect.value = preset.style;
-    paletteSelect.value = preset.palette;
-    perspectiveSelect.value = preset.perspective;
-  }
-
-  function buildSpec() {
-    const subject = normalizedObject() || "objeto sin nombre";
-    return {
-      version: "pixel-art-studio-spec-v1",
-      subject,
-      category: categorySelect.value,
-      canvas: `${sizeSelect.value}x${sizeSelect.value}`,
-      style: styleSelect.value,
-      detail: detailSelect.value,
-      palette: paletteSelect.value,
-      lighting: lightingSelect.value,
-      perspective: perspectiveSelect.value,
-      background: backgroundSelect.value,
-      outline: outlineSelect.value,
-      tutorialSteps: Number(stepsSelect.value),
-      extraNotes: notesInput.value.trim(),
-      requestedOutput: [
-        "pixel-art blueprint",
-        "recommended palette",
-        "step-by-step tutorial",
-        "pixel coordinates per step",
-        "final sprite preview"
-      ]
-    };
-  }
-
-  function renderSpec(spec) {
-    output.textContent = [
-      `OBJETO: ${spec.subject}`,
-      `CATEGORÍA: ${spec.category}`,
-      `FORMATO: ${spec.canvas}`,
-      `ESTILO: ${spec.style}`,
-      `DETALLE: ${spec.detail}`,
-      `PALETA: ${spec.palette}`,
-      `LUZ: ${spec.lighting}`,
-      `PERSPECTIVA: ${spec.perspective}`,
-      `FONDO: ${spec.background}`,
-      `CONTORNO: ${spec.outline}`,
-      `PASOS: ${spec.tutorialSteps}`,
-      spec.extraNotes ? `NOTAS: ${spec.extraNotes}` : "NOTAS: —",
-      "",
-      "SALIDA FUTURA DE IA:",
-      "• paleta recomendada",
-      "• instrucciones paso a paso",
-      "• coordenadas de píxeles por paso",
-      "• guía gráfica acumulativa",
-      "• sprite final"
-    ].join("\n");
-  }
-
-  function setState(text) { state.textContent = text; }
-
-  objectInput.addEventListener("change", suggestPreset);
-
-  generateBtn.addEventListener("click", () => {
-    latestSpec = buildSpec();
-    renderSpec(latestSpec);
-    applyBtn.disabled = false;
-    copyBtn.disabled = false;
-    setState("Especificación lista · prototipo local");
-  });
-
-  applyBtn.addEventListener("click", () => {
-    if (!latestSpec) return;
-    const editorSize = document.getElementById("sizeSelect");
-    editorSize.value = sizeSelect.value;
-    editorSize.dispatchEvent(new Event("change", { bubbles: true }));
-    setState(`Formato ${latestSpec.canvas} aplicado al editor`);
-    document.getElementById("pixelCanvas")?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-
-  copyBtn.addEventListener("click", async () => {
-    if (!latestSpec) return;
-    const text = JSON.stringify(latestSpec, null, 2);
-    try {
-      await navigator.clipboard.writeText(text);
-      setState("Especificación copiada al portapapeles");
-    } catch (_) {
-      setState("No se pudo copiar automáticamente");
-    }
-  });
+  // El antiguo AI Lab y el sistema de capas quedan pausados. La nueva entrada
+  // principal de IA se construye desde workspace.js y genera píxeles editables.
 })();
